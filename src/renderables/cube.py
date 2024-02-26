@@ -1,4 +1,4 @@
-from renderables.renderable import Renderable
+from src.renderables.renderable import Renderable
 import numpy as np
 
 
@@ -6,31 +6,20 @@ class Cube(Renderable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         vertex_data = self.get_vertex_data()
-        self.vbo = self.ctx.buffer(vertex_data)
-        self.program = self.shader_library.programs["default"]
-        self.vao = self.create_vao(
-            program=self.program,
-            format="2f 3f 3f",
-            attributes=['in_texcoord_0', 'in_normal', 'in_position'],
-            vbo=self.vbo)
+        self.vbo = self.ctx.buffer(vertex_data.astype("f4").tobytes())
+        self.vaos = self.generate_vaos()
 
-    def on_init(self):
-
-        # texture
-        self.texture = self.app.mesh.texture_data.textures[self.tex_id]
-        self.program['u_texture_0'] = 0
-        self.texture.use()
-        # mvp
-        self.program['m_proj'].write(self.camera.m_proj)
-        self.program['m_view'].write(self.camera.m_view)
-        self.program['m_model'].write(self.m_model)
-        # light
-        self.program['light.position'].write(self.app.light.position)
-        self.program['light.Ia'].write(self.app.light.Ia)
-        self.program['light.Id'].write(self.app.light.Id)
-        self.program['light.Is'].write(self.app.light.Is)
+    def generate_vaos(self) -> dict:
+        # You will need one VAO per program, which will coincide with the
+        vaos = {}
+        for program_name, program in self.shader_library.programs.items():
+            vaos[program_name] = self.create_vao(
+                program=program,
+                format="2f 3f 3f",
+                attributes=['in_texcoord_0', 'in_normal', 'in_position'],
+                vbo=self.vbo)
+        return vaos
 
     @staticmethod
     def get_data(vertices, indices):

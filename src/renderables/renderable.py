@@ -13,17 +13,17 @@ class Renderable:
 
         self.ctx = ctx
         self.shader_library = shader_library
+        self.vbo = None
+        self.vaos = {}
+        self.program = None
 
+        # Transform parameters
         self.position = glm.vec3(position)
         self.rotation = glm.vec3(rotation)
         self.scale = glm.vec3(scale)
-        self.model_matrix = self.generate_model_matrix()
-        self.vbo = None
-        self.vao = None
-        self.program = None
 
-    def on_init(self):
-        pass
+        # Transforms
+        self.model_matrix = self.generate_model_matrix()
 
     def update(self):
         pass
@@ -31,10 +31,14 @@ class Renderable:
     def get_vertex_data(self):
         pass
 
-
-    def render(self):
+    def render(self, shader_name: str):
         self.update()
-        self.vao.render()
+
+        #self.texture = self.app.mesh.texture.textures[self.tex_id]
+        #self.program['u_texture_0'] = 0
+        #self.texture.use(location=0)
+
+        self.vaos[shader_name].render(moderngl.TRIANGLES)
 
     def render_shadow(self):
         pass

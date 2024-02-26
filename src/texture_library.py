@@ -13,19 +13,14 @@ class TextureLibrary:
         self.window_size = window_size
 
         self.textures = {
-            0: self.load_texture(path=os.path.join(constants.ROOT_DIR,
-                                                   "textures", "img.png")),
-            1: self.load_texture(path=os.path.join(constants.ROOT_DIR,
-                                                   "textures", "img_1.png")),
-            2: self.load_texture(path=os.path.join(constants.ROOT_DIR,
-                                                   "textures", "img_2.png")),
+            0: self.load_texture(path=os.path.join(constants.TEXTURES_DIR, "img.png")),
+            1: self.load_texture(path=os.path.join(constants.TEXTURES_DIR, "img_1.png")),
+            2: self.load_texture(path=os.path.join(constants.TEXTURES_DIR, "img_2.png")),
             "cat": self.load_texture(path=os.path.join(constants.ROOT_DIR,
                                                        "objects",
                                                        "cat",
                                                        "20430_cat_diff_v1.jpg")),
-            "skybox": self.get_texture_cube(dir_path=os.path.join(constants.ROOT_DIR,
-                                                                  "textures",
-                                                                  "skybox1"),
+            "skybox": self.get_texture_cube(dir_path=os.path.join(constants.TEXTURES_DIR, "skybox1"),
                                             ext='png'),
             "depth_texture": self.generate_depth_texture()
         }

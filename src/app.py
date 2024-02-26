@@ -11,6 +11,8 @@ import constants
 from camera import Camera
 from scene import Scene
 from light import Light
+from render_passes.render_pass_forward import RenderPassForward
+from render_passes.render_pass_shadow import RenderPassShadow
 from shader_library import ShaderLibrary
 from texture_library import TextureLibrary
 from utilities import utils_logging
@@ -20,7 +22,7 @@ from renderables.cube import Cube
 class App:
 
     def __init__(self,
-                 window_title="Hand Animation Viewer",
+                 window_title="Manus Hand Viewer",
                  window_size=(1280, 720),
                  vertical_sync=False,
                  log_level="info"):
@@ -76,8 +78,14 @@ class App:
         self.shader_library = ShaderLibrary(ctx=self.ctx)
         self.texture_library = TextureLibrary(ctx=self.ctx, window_size=window_size)
 
+        # Render passes
+        self.render_passes = [
+            RenderPassForward(ctx=self.ctx,
+                              shader_program_name="default",
+                              texture_library=self.texture_library)
+        ]
+
         # Internal Components
-        self.light = Light()
         self.camera = Camera(window_size=window_size)
         self.scene = Scene(ctx=self.ctx, texture_library=self.texture_library)
 
@@ -146,10 +154,13 @@ class App:
 
             self.imgui_start()
 
-            self.camera.update(delta_time=delta_time)
-            self.scene.render()
+            self.camera.update(delta_time=delta_time, keyboard_state=self.keyboard_state)
 
-            self.imgui_main_menu_bar()
+            for render_pass in self.render_passes:
+                render_pass.render(scene=self.scene, camera=self.camera)
+
+            self.imgui_menu_bar()
+            self.imgui_scene_window()
             self.imgui_exit_modal()
             self.imgui_stop()
 
@@ -180,9 +191,6 @@ class App:
         if action == glfw.RELEASE:
             self.keyboard_state[key] = constants.KEY_STATE_UP
 
-        # Propagate state changes to the rest of the system
-        self.camera.move(keyboard_state=self.keyboard_state)
-
     def _glfw_callback_mouse_button(self, glfw_window, button, action, mods):
         pass
 
@@ -208,7 +216,7 @@ class App:
     #                            GUI Functions
     # ========================================================================
 
-    def imgui_main_menu_bar(self):
+    def imgui_menu_bar(self):
 
         with imgui.begin_main_menu_bar() as main_menu_bar:
 
@@ -242,6 +250,28 @@ class App:
                 clicked, selected = imgui.menu_item("Preferences", "Ctrl + Q", False, True)
 
                 imgui.end_menu()
+
+    def imgui_scene_window(self):
+
+        # open new window context
+        imgui.begin(f"Scene", True)
+
+        imgui.text(f"Camera")
+        _, new_position = imgui.drag_float3("Position", *self.camera.position, 0.01)
+        self.camera.position = new_position
+        _, self.camera.yaw = imgui.drag_float("Yaw", self.camera.yaw, 0.1)
+        _, self.camera.pitch = imgui.drag_float("Yaw", self.camera.pitch, 0.1)
+        imgui.spacing()
+
+        # imgui.set_window_position(300, 150)
+        imgui.set_window_size(500, 500)
+
+        # ======================================================================
+        #                 List all available entities in the scene
+        # ======================================================================
+
+        # draw text label inside of current window
+        imgui.end()
 
     def imgui_exit_modal(self):
 

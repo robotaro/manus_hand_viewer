@@ -15,20 +15,15 @@ class Camera:
         self.forward = glm.vec3(0, 0, -1)
         self.yaw = yaw
         self.pitch = pitch
-        self.delta_time = 0
         self.view_matrix = self.get_view_matrix()
         self.projection_matrix = self.get_projection_matrix()
 
         self.mouse_x_past = None
         self.mouse_y_past = None
 
-    def update(self, delta_time: float):
-        self.delta_time = delta_time
-        self.update_camera_vectors()
-        self.view_matrix = self.get_view_matrix()
+    def update(self, keyboard_state: np.array, delta_time: float):
 
-    def move(self, keyboard_state: np.array):
-        velocity = constants.CAMERA_SPEED * self.delta_time
+        velocity = constants.CAMERA_SPEED * delta_time
         if keyboard_state[glfw.KEY_W]:
             self.position += self.forward * velocity
         if keyboard_state[glfw.KEY_S]:
@@ -41,6 +36,9 @@ class Camera:
             self.position += self.up * velocity
         if keyboard_state[glfw.KEY_Q]:
             self.position -= self.up * velocity
+
+        self.update_camera_vectors()
+        self.view_matrix = self.get_view_matrix()
 
     def rotate(self, mouse_x: float, mouse_y: float):
 
@@ -57,9 +55,6 @@ class Camera:
         self.yaw += dx * constants.CAMERA_SENSITIVITY
         self.pitch -= dy * constants.CAMERA_SENSITIVITY
         self.pitch = max(-89, min(89, self.pitch))
-
-        #print((mouse_x, mouse_y))
-        #print((self.pitch, self.yaw))
 
     def update_camera_vectors(self):
         yaw, pitch = glm.radians(self.yaw), glm.radians(self.pitch)

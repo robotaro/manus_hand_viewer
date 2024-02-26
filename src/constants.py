@@ -6,9 +6,11 @@ import os
 # ===============================================================================
 
 # Default directories
-ROOT_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR = os.path.join(ROOT_DIR, "config")
+SHADERS_DIR = os.path.join(ROOT_DIR, "shaders")
+TEXTURES_DIR = os.path.join(ROOT_DIR, "textures")
 
 # Logging
 LOGGING_MAP = {
@@ -23,7 +25,7 @@ LOGGING_MAP = {
 CAMERA_FOV = 50  # deg
 CAMERA_NEAR = 0.1
 CAMERA_FAR = 100
-CAMERA_SPEED = 0.005
+CAMERA_SPEED = 1.0
 CAMERA_SENSITIVITY = 0.04
 
 # Mouse Input

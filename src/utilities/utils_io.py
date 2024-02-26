@@ -4,7 +4,7 @@ from datetime import datetime
 import yaml
 import re
 
-import constants
+from src import constants
 
 
 def load_data_in_terminal_format(txt_fpath: str):

@@ -2,7 +2,7 @@ import glm
 import glfw
 import numpy as np
 
-from manus_glove_viewer import constants
+import constants
 
 
 class Camera:

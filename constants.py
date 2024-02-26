@@ -4,7 +4,13 @@ import os
 # ===============================================================================
 #                              Global
 # ===============================================================================
+
+# Default directories
 ROOT_DIR = os.path.dirname(__file__)
+DATA_DIR = os.path.join(ROOT_DIR, "data")
+CONFIG_DIR = os.path.join(ROOT_DIR, "config")
+
+# Logging
 LOGGING_MAP = {
     "debug": logging.DEBUG,
     "info": logging.INFO,

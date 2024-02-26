@@ -2,7 +2,8 @@ import moderngl
 from PIL import Image
 import os
 
-from manus_glove_viewer import constants
+import constants
+
 
 class TextureLibrary:
 

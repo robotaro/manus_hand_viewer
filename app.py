@@ -7,14 +7,14 @@ import numpy as np
 import imgui
 from imgui.integrations.glfw import GlfwRenderer
 
-from manus_glove_viewer import constants
-from manus_glove_viewer.camera import Camera
-from manus_glove_viewer.scene import Scene
-from manus_glove_viewer.light import Light
-from manus_glove_viewer.shader_library import ShaderLibrary
-from manus_glove_viewer.texture_library import TextureLibrary
-from manus_glove_viewer.utilities import utils_logging
-from manus_glove_viewer.renderables.cube import Cube
+import constants
+from camera import Camera
+from scene import Scene
+from light import Light
+from shader_library import ShaderLibrary
+from texture_library import TextureLibrary
+from utilities import utils_logging
+from renderables.cube import Cube
 
 
 class App:

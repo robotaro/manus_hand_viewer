@@ -1,6 +1,6 @@
 import moderngl
 
-from manus_glove_viewer.texture_library import TextureLibrary
+from texture_library import TextureLibrary
 from utilities import utils_io
 
 

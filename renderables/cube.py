@@ -1,4 +1,4 @@
-from manus_glove_viewer.renderables.renderable import Renderable
+from renderables.renderable import Renderable
 import numpy as np
 
 

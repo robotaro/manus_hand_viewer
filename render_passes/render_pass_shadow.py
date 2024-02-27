@@ -9,7 +9,7 @@ class RenderPassShadow(RenderPass):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def render(self, scene: Scene, camera: Camera):
+    def render(self, scene: Scene, camera: Camera, directional_lights=None):
 
         # Shadow pass
         """self.depth_fbo.clear()

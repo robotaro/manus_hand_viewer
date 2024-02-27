@@ -37,19 +37,15 @@ class Scene:
 
     def create_renderable(self, type_id: str, params=None):
         params = params if params is not None else {}
-        new_renderable = self.registered_renderables[type_id](ctx=self.ctx)
+        new_renderable = self.registered_renderables[type_id](ctx=self.ctx, params=params)
 
         # Each renderable gets a VAO per render pass. It's how it works with ModernGL
         for render_pass in self.render_passes:
-
-            #new_renderable.vaos[render_pass.program_name] = self.ctx.vertex_array(
-            #    render_pass.program,
-            #    new_renderable.vbo,
-            #    *new_renderable.attributes)
-
             new_renderable.vaos[render_pass.program_name] = self.ctx.vertex_array(
                 render_pass.program,
+                # TODO: You can change this list to individual VBOs!
                 [(new_renderable.vbo, new_renderable.format, *new_renderable.attributes)],
+                new_renderable.ibo,
                 skip_errors=True)
 
         self.renderables.append(new_renderable)
@@ -67,4 +63,7 @@ class Scene:
     def render(self, camera: Camera):
 
         for render_pass in self.render_passes:
-            render_pass.render(camera=camera, renderables=self.renderables)
+            render_pass.render(
+                camera=camera,
+                renderables=self.renderables,
+                directional_lights=self.directional_lights)

@@ -106,13 +106,3 @@ void main() {
     color = pow(color, 1 / vec3(gamma));
     fragColor = vec4(color, 1.0);
 }
-
-
-
-
-
-
-
-
-
-

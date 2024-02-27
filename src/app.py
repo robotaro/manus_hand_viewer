@@ -171,14 +171,23 @@ class App:
 
     def initialise_scene(self):
 
-        self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
+        # Register Render Passes
+        self.scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
         self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
 
-        # Create render passes BEFORE adding the renderables
-        self.scene.create_render_pass(type_id="hello_world", program_name="hello_world")
-        self.scene.create_renderable(type_id="hello_triangle")
+        # Register renderables
+        self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
+        self.scene.register_renderable(type_id="cube", renderable_class=Cube)
 
-        g = 0
+        self.scene.directional_lights.append(Light())
+
+        # Create render passes BEFORE adding the renderables
+        self.scene.create_render_pass(type_id="forward", program_name="default")
+        #self.scene.create_render_pass(type_id="hello_world", program_name="hello_world")
+
+        self.scene.create_renderable(type_id="cube")
+        #self.scene.create_renderable(type_id="hello_triangle")
+
 
 
     # ========================================================================

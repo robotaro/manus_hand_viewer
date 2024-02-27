@@ -4,23 +4,22 @@ import glm
 
 class Renderable:
 
-    def __init__(self,
-                 ctx: moderngl.Context,
-                 position=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1)):
+    def __init__(self, ctx: moderngl.Context, params=None):
 
         self.ctx = ctx
         self.vbo = None
+        self.vaos = {}
+        self.ibo = None
         self.format = None
         self.attributes = None
-        self.vaos = {}
         self.program = None
 
+        params = params if params is not None else {}
+
         # Transform parameters
-        self.position = glm.vec3(position)
-        self.rotation = glm.vec3(rotation)
-        self.scale = glm.vec3(scale)
+        self.position = glm.vec3(params.get("position", (0, 0, 0)))
+        self.rotation = glm.vec3(params.get("rotation", (0, 0, 0)))
+        self.scale = glm.vec3(params.get("scale", (1, 1, 1)))
 
         # Transforms
         self.model_matrix = self.generate_model_matrix()
@@ -31,14 +30,9 @@ class Renderable:
     def get_vertex_data(self):
         pass
 
-    def render(self, shader_name: str):
+    def render(self, program_name: str):
         self.update()
-
-        #self.texture = self.app.mesh.texture.textures[self.tex_id]
-        #self.program['u_texture_0'] = 0
-        #self.texture.use(location=0)
-
-        self.vaos[shader_name].render(moderngl.TRIANGLES)
+        self.vaos[program_name].render(moderngl.TRIANGLES)
 
     def render_shadow(self):
         pass

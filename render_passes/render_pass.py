@@ -27,7 +27,5 @@ class RenderPass:
         program = self.ctx.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
         return program
 
-    def render(self, camera: Camera, renderables: list):
-
-
+    def render(self, camera: Camera, renderables: list, directional_lights=None):
         pass

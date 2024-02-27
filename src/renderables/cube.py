@@ -16,8 +16,8 @@ class Cube(Renderable):
         for program_name, program in self.shader_library.programs.items():
             vaos[program_name] = self.create_vao(
                 program=program,
-                format="2f 3f 3f",
-                attributes=['in_texcoord_0', 'in_normal', 'in_position'],
+                format="3f 3f",
+                attributes=['in_position', 'in_normal'],
                 vbo=self.vbo)
         return vaos
 
@@ -38,15 +38,6 @@ class Cube(Renderable):
                    (0, 6, 1), (0, 5, 6)]
         vertex_data = self.get_data(vertices, indices)
 
-        tex_coord_vertices = [(0, 0), (1, 0), (1, 1), (0, 1)]
-        tex_coord_indices = [(0, 2, 3), (0, 1, 2),
-                             (0, 2, 3), (0, 1, 2),
-                             (0, 1, 2), (2, 3, 0),
-                             (2, 3, 0), (2, 0, 1),
-                             (0, 2, 3), (0, 1, 2),
-                             (3, 1, 2), (3, 0, 1),]
-        tex_coord_data = self.get_data(tex_coord_vertices, tex_coord_indices)
-
         normals = [( 0, 0, 1) * 6,
                    ( 1, 0, 0) * 6,
                    ( 0, 0,-1) * 6,
@@ -55,6 +46,5 @@ class Cube(Renderable):
                    ( 0,-1, 0) * 6,]
         normals = np.array(normals, dtype='f4').reshape(36, 3)
 
-        vertex_data = np.hstack([normals, vertex_data])
-        vertex_data = np.hstack([tex_coord_data, vertex_data])
+        vertex_data = np.hstack([vertex_data, normals])
         return vertex_data

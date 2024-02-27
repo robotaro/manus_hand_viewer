@@ -19,7 +19,7 @@ class RenderPassForward(RenderPass):
         self.program['light.Id'].write(scene.light.Id)
         self.program['light.Is'].write(scene.light.Is)
 
-        # set camera
+        # Set camera
         self.program['m_proj'].write(camera.projection_matrix)
         self.program['m_view'].write(camera.view_matrix)
 

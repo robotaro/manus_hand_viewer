@@ -6,14 +6,14 @@ class Renderable:
 
     def __init__(self,
                  ctx: moderngl.Context,
-                 shader_library,
                  position=(0, 0, 0),
                  rotation=(0, 0, 0),
                  scale=(1, 1, 1)):
 
         self.ctx = ctx
-        self.shader_library = shader_library
         self.vbo = None
+        self.format = None
+        self.attributes = None
         self.vaos = {}
         self.program = None
 
@@ -42,10 +42,6 @@ class Renderable:
 
     def render_shadow(self):
         pass
-
-    def create_vao(self, program, vbo, format: str, attributes: list):
-        vao = self.ctx.vertex_array(program, [(vbo, format, *attributes)], skip_errors=True)
-        return vao
 
     def generate_model_matrix(self):
         m_model = glm.mat4()

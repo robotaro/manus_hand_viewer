@@ -8,7 +8,7 @@ class RenderPassForward(RenderPass):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def render(self, scene: Scene, camera: Camera):
+    def render(self, camera: Camera, renderables: list):
 
         # Prepare to render directly to the screen
         self.ctx.screen.use()

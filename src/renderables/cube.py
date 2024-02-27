@@ -8,18 +8,10 @@ class Cube(Renderable):
         super().__init__(**kwargs)
         vertex_data = self.get_vertex_data()
         self.vbo = self.ctx.buffer(vertex_data.astype("f4").tobytes())
-        self.vaos = self.generate_vaos()
 
-    def generate_vaos(self) -> dict:
-        # You will need one VAO per program, which will coincide with the
-        vaos = {}
-        for program_name, program in self.shader_library.programs.items():
-            vaos[program_name] = self.create_vao(
-                program=program,
-                format="3f 3f",
-                attributes=['in_position', 'in_normal'],
-                vbo=self.vbo)
-        return vaos
+        self.format = "3f 3f"
+        self.attributes = ['in_position', 'in_normal']
+
 
     @staticmethod
     def get_data(vertices, indices):

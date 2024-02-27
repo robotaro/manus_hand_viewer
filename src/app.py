@@ -7,16 +7,22 @@ import numpy as np
 import imgui
 from imgui.integrations.glfw import GlfwRenderer
 
+# Main components
 import constants
 from camera import Camera
 from scene import Scene
 from light import Light
-from render_passes.render_pass_forward import RenderPassForward
-from render_passes.render_pass_shadow import RenderPassShadow
-from shader_library import ShaderLibrary
 from texture_library import TextureLibrary
 from utilities import utils_logging
-from renderables.cube import Cube
+
+# Renderables
+from src.renderables.cube import Cube
+from src.renderables.hello_triangle import HelloTriangle
+
+# Render passes
+from render_passes.render_pass_forward import RenderPassForward
+from render_passes.render_pass_shadow import RenderPassShadow
+from render_passes.render_pass_hello_world import RenderPassHelloWorld
 
 
 class App:
@@ -75,15 +81,7 @@ class App:
         self.imgui_exit_popup_open = False
 
         # Internal Libraries
-        self.shader_library = ShaderLibrary(ctx=self.ctx)
         self.texture_library = TextureLibrary(ctx=self.ctx, window_size=window_size)
-
-        # Render passes
-        self.render_passes = [
-            RenderPassForward(ctx=self.ctx,
-                              shader_program_name="default",
-                              texture_library=self.texture_library)
-        ]
 
         # Internal Components
         self.camera = Camera(window_size=window_size)
@@ -156,8 +154,7 @@ class App:
 
             self.camera.update(delta_time=delta_time, keyboard_state=self.keyboard_state)
 
-            for render_pass in self.render_passes:
-                render_pass.render(scene=self.scene, camera=self.camera)
+            self.scene.render(camera=self.camera)
 
             self.imgui_menu_bar()
             self.imgui_scene_window()
@@ -173,7 +170,16 @@ class App:
     # ========================================================================
 
     def initialise_scene(self):
-        self.scene.renderables.append(Cube(ctx=self.ctx, shader_library=self.shader_library))
+
+        self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
+        self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
+
+        # Create render passes BEFORE adding the renderables
+        self.scene.create_render_pass(type_id="hello_world", program_name="hello_world")
+        self.scene.create_renderable(type_id="hello_triangle")
+
+        g = 0
+
 
     # ========================================================================
     #                       GLFW Callback functions

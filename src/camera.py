@@ -11,8 +11,8 @@ class Camera:
 
         self.aspect_ratio = window_size[0] / window_size[1]
         self.position = glm.vec3(position)
-        self.up = glm.vec3(0, 1, 0)
         self.right = glm.vec3(1, 0, 0)
+        self.up = glm.vec3(0, 1, 0)
         self.forward = glm.vec3(0, 0, 1)
         self.yaw = yaw
         self.pitch = pitch
@@ -74,10 +74,11 @@ class Camera:
         self.up = glm.normalize(glm.cross(self.right, self.forward))
 
     def calculate_view_matrix(self):
-        look_at_matrix = glm.lookAt(self.position,
-                                       self.position + self.forward,
-                                       self.up)
-        return look_at_matrix
+        # TODO: I believe the lookAt function already returns the inverse transform. That's why it
+        #       works as the view_matrix out-of-the-box
+        return glm.lookAt(self.position,
+                          self.position + self.forward,
+                          self.up)
 
     def calculate_projection_matrix(self):
         return glm.perspective(

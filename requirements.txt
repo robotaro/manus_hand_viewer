@@ -1,4 +1,6 @@
 numpy==1.24.4
+llvmlite==0.41.1  # require by numba
+numba==0.58.1
 pandas==2.0.3
 PyYAML==6.0
 moderngl==5.7.4
@@ -7,3 +9,5 @@ glfw==2.5.5
 imgui==2.0.0
 PyGLM==2.7.1
 Pillow==10.0.0
+trimesh==4.1.6  # 3D geometry operations (requires scipy)
+scipy

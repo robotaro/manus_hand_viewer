@@ -22,7 +22,7 @@ class Renderable:
         self.scale = glm.vec3(self.params.get("scale", (1, 1, 1)))
 
         # Transforms
-        self.model_matrix = self.generate_model_matrix()
+        self.model_matrix = self.calculate_model_matrix()
 
     def update(self):
         pass
@@ -37,7 +37,7 @@ class Renderable:
     def render_shadow(self):
         pass
 
-    def generate_model_matrix(self):
+    def calculate_model_matrix(self):
         m_model = glm.mat4()
         m_model = glm.translate(m_model, self.position)
         m_model = glm.rotate(m_model, self.rotation.z, glm.vec3(0, 0, 1))

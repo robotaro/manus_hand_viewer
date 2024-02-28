@@ -1,4 +1,5 @@
 from src.renderables.renderable import Renderable
+from src.mesh_factory import MeshFactory
 import numpy as np
 
 
@@ -12,7 +13,6 @@ class Cube(Renderable):
 
         self.format = "3f 3f"
         self.attributes = ['in_position', 'in_normal']
-
 
     @staticmethod
     def get_data(vertices, indices):

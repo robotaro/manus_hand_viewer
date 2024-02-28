@@ -18,6 +18,7 @@ from utilities import utils_logging
 # Renderables
 from src.renderables.cube import Cube
 from src.renderables.hello_triangle import HelloTriangle
+from src.renderables.cylinder import Cylinder
 
 # Render passes
 from render_passes.render_pass_forward import RenderPassForward
@@ -86,10 +87,14 @@ class App:
         # Internal Components
         self.camera = Camera(window_size=window_size)
         self.scene = Scene(ctx=self.ctx, texture_library=self.texture_library)
+
         self.scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
         self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
+
         self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
         self.scene.register_renderable(type_id="cube", renderable_class=Cube)
+        self.scene.register_renderable(type_id="cylinder", renderable_class=Cylinder)
+
         self.scene.directional_lights.append(Light())
 
         # Flags

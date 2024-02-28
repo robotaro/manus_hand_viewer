@@ -17,16 +17,15 @@ def main():
     app = App()
 
     # Create render passes BEFORE adding the renderables
-    app.scene.create_render_pass(type_id="forward", program_name="default")
+    app.scene.create_render_pass(type_id="forward", program_name="default_color")
     # self.scene.create_render_pass(type_id="hello_world", program_name="hello_world")
 
     dist = 1.0
     for i in range(10):
         for j in range(10):
             position = (i * dist - 5.0, 0.0, j * dist - 5.0)
-            app.scene.create_renderable(type_id="cube",
+            app.scene.create_renderable(type_id="cylinder",
                                         params={"position": position,
-                                                "scale": 0.25
                                                 })
     # self.scene.create_renderable(type_id="hello_triangle")
 

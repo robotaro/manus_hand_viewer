@@ -14,12 +14,12 @@ class Renderable:
         self.attributes = None
         self.program = None
 
-        params = params if params is not None else {}
+        self.params = params if params is not None else {}
 
         # Transform parameters
-        self.position = glm.vec3(params.get("position", (0, 0, 0)))
-        self.rotation = glm.vec3(params.get("rotation", (0, 0, 0)))
-        self.scale = glm.vec3(params.get("scale", (1, 1, 1)))
+        self.position = glm.vec3(self.params.get("position", (0, 0, 0)))
+        self.rotation = glm.vec3(self.params.get("rotation", (0, 0, 0)))
+        self.scale = glm.vec3(self.params.get("scale", (1, 1, 1)))
 
         # Transforms
         self.model_matrix = self.generate_model_matrix()

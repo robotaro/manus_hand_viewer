@@ -6,7 +6,8 @@ class Cube(Renderable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        vertex_data = self.get_vertex_data()
+
+        vertex_data = self.get_vertex_data(scale=self.params.get("scale", 1.0))
         self.vbo = self.ctx.buffer(vertex_data.astype("f4").tobytes())
 
         self.format = "3f 3f"
@@ -18,9 +19,15 @@ class Cube(Renderable):
         data = [vertices[ind] for triangle in indices for ind in triangle]
         return np.array(data, dtype='f4')
 
-    def get_vertex_data(self):
-        vertices = [(-1, -1, 1), ( 1, -1,  1), (1,  1,  1), (-1, 1,  1),
-                    (-1, 1, -1), (-1, -1, -1), (1, -1, -1), ( 1, 1, -1)]
+    def get_vertex_data(self, scale=1.0):
+        vertices = [(-scale, -scale, scale),
+                    (scale, -scale, scale),
+                    (scale, scale, scale),
+                    (-scale, scale, scale),
+                    (-scale, scale, -scale),
+                    (-scale, -scale, -scale),
+                    (scale, -scale, -scale),
+                    (scale, scale, -scale)]
 
         indices = [(0, 2, 3), (0, 1, 2),
                    (1, 7, 2), (1, 6, 7),

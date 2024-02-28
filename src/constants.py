@@ -1,5 +1,6 @@
 import logging
 import os
+import numpy as np
 
 # ===============================================================================
 #                              Global
@@ -25,8 +26,11 @@ LOGGING_MAP = {
 CAMERA_FOV = 50  # deg
 CAMERA_NEAR = 0.1
 CAMERA_FAR = 100
-CAMERA_SPEED = 1.0
-CAMERA_SENSITIVITY = 0.04
+CAMERA_SPEED = 5.0
+CAMERA_MOUSE_SENSITIVITY = 0.001
+CAMERA_MIN_PITCH_RADIANS = -np.pi / 2.0 - 0.01
+CAMERA_MAX_PITCH_RADIANS = np.pi / 2.0 - 0.01
+
 
 # Mouse Input
 MOUSE_LEFT = 0

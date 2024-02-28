@@ -1,3 +1,5 @@
+import moderngl
+
 from render_passes.render_pass import RenderPass
 from src.scene import Scene
 from src.camera import Camera
@@ -14,6 +16,8 @@ class RenderPassForward(RenderPass):
 
         # Prepare to render directly to the screen
         self.ctx.screen.use()
+
+        self.ctx.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
 
         # Only working with one light for now
         if len(directional_lights) > 0:

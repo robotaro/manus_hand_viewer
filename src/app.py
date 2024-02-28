@@ -86,6 +86,11 @@ class App:
         # Internal Components
         self.camera = Camera(window_size=window_size)
         self.scene = Scene(ctx=self.ctx, texture_library=self.texture_library)
+        self.scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
+        self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
+        self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
+        self.scene.register_renderable(type_id="cube", renderable_class=Cube)
+        self.scene.directional_lights.append(Light())
 
         # Flags
         self.close_application = False
@@ -133,8 +138,6 @@ class App:
 
     def run(self):
 
-        self.initialise_scene()
-
         # Main loop
         self.close_application = False
         previous_time = time.perf_counter()
@@ -165,30 +168,6 @@ class App:
 
         self.shutdown()
 
-    # ========================================================================
-    #                        Scene initialisation
-    # ========================================================================
-
-    def initialise_scene(self):
-
-        # Register Render Passes
-        self.scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
-        self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
-
-        # Register renderables
-        self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
-        self.scene.register_renderable(type_id="cube", renderable_class=Cube)
-
-        self.scene.directional_lights.append(Light())
-
-        # Create render passes BEFORE adding the renderables
-        self.scene.create_render_pass(type_id="forward", program_name="default")
-        #self.scene.create_render_pass(type_id="hello_world", program_name="hello_world")
-
-        self.scene.create_renderable(type_id="cube")
-        #self.scene.create_renderable(type_id="hello_triangle")
-
-
 
     # ========================================================================
     #                       GLFW Callback functions
@@ -207,7 +186,14 @@ class App:
             self.keyboard_state[key] = constants.KEY_STATE_UP
 
     def _glfw_callback_mouse_button(self, glfw_window, button, action, mods):
-        pass
+
+        if action == glfw.PRESS and button == glfw.MOUSE_BUTTON_RIGHT:
+            glfw.set_input_mode(self.window_glfw, glfw.CURSOR, glfw.CURSOR_DISABLED)
+            self.camera.mouse_rotation_enabled = True
+
+        if action == glfw.RELEASE and button == glfw.MOUSE_BUTTON_RIGHT:
+            glfw.set_input_mode(self.window_glfw, glfw.CURSOR, glfw.CURSOR_NORMAL)
+            self.camera.mouse_rotation_enabled = False
 
     def _glfw_callback_mouse_move(self, glfw_window, x, y):
         self.camera.rotate(mouse_x=x, mouse_y=y)

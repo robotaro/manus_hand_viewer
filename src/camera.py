@@ -6,39 +6,41 @@ import constants
 
 
 class Camera:
-    def __init__(self, window_size: tuple, position=(0, 0, 4), yaw=-90, pitch=0):
+
+    def __init__(self, window_size: tuple, position=(0, 0, -4), yaw=-np.pi/2.0, pitch=0):
 
         self.aspect_ratio = window_size[0] / window_size[1]
         self.position = glm.vec3(position)
         self.up = glm.vec3(0, 1, 0)
         self.right = glm.vec3(1, 0, 0)
-        self.forward = glm.vec3(0, 0, -1)
+        self.forward = glm.vec3(0, 0, 1)
         self.yaw = yaw
         self.pitch = pitch
-        self.view_matrix = self.get_view_matrix()
-        self.projection_matrix = self.get_projection_matrix()
+        self.view_matrix = self.calculate_view_matrix()
+        self.projection_matrix = self.calculate_projection_matrix()
 
+        self.mouse_rotation_enabled = False
         self.mouse_x_past = None
         self.mouse_y_past = None
 
     def update(self, keyboard_state: np.array, delta_time: float):
 
         velocity = constants.CAMERA_SPEED * delta_time
-        if keyboard_state[glfw.KEY_W]:
+        if keyboard_state[glfw.KEY_W] == constants.KEY_STATE_DOWN:
             self.position += self.forward * velocity
-        if keyboard_state[glfw.KEY_S]:
+        if keyboard_state[glfw.KEY_S] == constants.KEY_STATE_DOWN:
             self.position -= self.forward * velocity
-        if keyboard_state[glfw.KEY_A]:
+        if keyboard_state[glfw.KEY_A] == constants.KEY_STATE_DOWN:
             self.position -= self.right * velocity
-        if keyboard_state[glfw.KEY_D]:
+        if keyboard_state[glfw.KEY_D] == constants.KEY_STATE_DOWN:
             self.position += self.right * velocity
-        if keyboard_state[glfw.KEY_E]:
+        if keyboard_state[glfw.KEY_E] == constants.KEY_STATE_DOWN:
             self.position += self.up * velocity
-        if keyboard_state[glfw.KEY_Q]:
+        if keyboard_state[glfw.KEY_Q] == constants.KEY_STATE_DOWN:
             self.position -= self.up * velocity
 
         self.update_camera_vectors()
-        self.view_matrix = self.get_view_matrix()
+        self.view_matrix = self.calculate_view_matrix()
 
     def rotate(self, mouse_x: float, mouse_y: float):
 
@@ -52,25 +54,32 @@ class Camera:
         dy = mouse_y - self.mouse_y_past
         self.mouse_y_past = mouse_y
 
-        self.yaw += dx * constants.CAMERA_SENSITIVITY
-        self.pitch -= dy * constants.CAMERA_SENSITIVITY
-        self.pitch = max(-89, min(89, self.pitch))
+        if not self.mouse_rotation_enabled:
+            return
+
+        self.yaw += dx * constants.CAMERA_MOUSE_SENSITIVITY
+        self.pitch -= dy * constants.CAMERA_MOUSE_SENSITIVITY
+        self.pitch = np.clip(self.pitch,
+                             a_min=constants.CAMERA_MIN_PITCH_RADIANS,
+                             a_max=constants.CAMERA_MAX_PITCH_RADIANS)
 
     def update_camera_vectors(self):
-        yaw, pitch = glm.radians(self.yaw), glm.radians(self.pitch)
 
-        self.forward.x = glm.cos(yaw) * glm.cos(pitch)
-        self.forward.y = glm.sin(pitch)
-        self.forward.z = glm.sin(yaw) * glm.cos(pitch)
+        self.forward.x = glm.cos(self.yaw) * glm.cos(self.pitch)
+        self.forward.y = glm.sin(self.pitch)
+        self.forward.z = glm.sin(self.yaw) * glm.cos(self.pitch)
 
         self.forward = glm.normalize(self.forward)
         self.right = glm.normalize(glm.cross(self.forward, glm.vec3(0, 1, 0)))
         self.up = glm.normalize(glm.cross(self.right, self.forward))
 
-    def get_view_matrix(self):
-        return glm.lookAt(self.position, self.position + self.forward, self.up)
+    def calculate_view_matrix(self):
+        look_at_matrix = glm.lookAt(self.position,
+                                       self.position + self.forward,
+                                       self.up)
+        return look_at_matrix
 
-    def get_projection_matrix(self):
+    def calculate_projection_matrix(self):
         return glm.perspective(
             glm.radians(constants.CAMERA_FOV),
             self.aspect_ratio,

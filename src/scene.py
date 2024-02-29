@@ -51,8 +51,7 @@ class Scene:
         self.renderables.append(new_renderable)
         return new_renderable
 
-    def create_render_pass(self, type_id: str, program_name: str, params=None):
-        params = params if params is not None else {}
+    def create_render_pass(self, type_id: str, program_name: str):
         new_render_pass = self.registered_render_passes[type_id](
             ctx=self.ctx,
             program_name=program_name,

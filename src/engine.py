@@ -20,7 +20,7 @@ from utilities import utils_logging
 # Renderables
 from src.renderables.cube import Cube
 from src.renderables.hello_triangle import HelloTriangle
-from src.renderables.cylinder import Cylinder
+from src.renderables.finger_mcp_joint import FingerMCPJoint
 
 # Render passes
 from render_passes.render_pass_forward import RenderPassForward
@@ -92,16 +92,7 @@ class Engine:
 
         # Internal Components
         self.camera = Camera(window_size=window_size)
-        self.scene = Scene(ctx=self.ctx, texture_library=self.texture_library)
-
-        # Register Render Passes
-        self.scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
-        self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
-
-        # Register Renderables
-        self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
-        self.scene.register_renderable(type_id="cube", renderable_class=Cube)
-        self.scene.register_renderable(type_id="cylinder", renderable_class=Cylinder)
+        self.scene = self.create_scene()
 
         # Add basic light
         self.scene.directional_lights.append(Light())
@@ -136,7 +127,7 @@ class Engine:
             int(pos[0] + (mode.size.width - size[0]) / 2),
             int(pos[1] + (mode.size.height - size[1]) / 2))
 
-    def set_external_update_callback(self, callback_function):
+    def set_external_update_callback(self, callback_function: Callable):
         signature = inspect.signature(callback_function)
         parameters = signature.parameters.values()
         if len(parameters) == 1:
@@ -144,7 +135,7 @@ class Engine:
         else:
             raise ValueError("Provided function must take exactly one argument (delta_time).")
 
-    def set_external_imgui_callback(self, callback_function):
+    def set_external_imgui_callback(self, callback_function: Callable):
         signature = inspect.signature(callback_function)
         parameters = signature.parameters.values()
         if len(parameters) == 0:
@@ -165,6 +156,20 @@ class Engine:
         imgui.end_frame()
         imgui.render()
         self.imgui_renderer.render(imgui.get_draw_data())
+
+    def create_scene(self) -> Scene:
+        new_scene = Scene(ctx=self.ctx, texture_library=self.texture_library)
+
+        # Register Render Passes
+        new_scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
+        new_scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
+
+        # Register Renderables
+        new_scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
+        new_scene.register_renderable(type_id="cube", renderable_class=Cube)
+        new_scene.register_renderable(type_id="finger_mcp_joint", renderable_class=FingerMCPJoint)
+
+        return new_scene
 
     def run(self):
 

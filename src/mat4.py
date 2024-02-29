@@ -131,12 +131,11 @@ def mul_vectors3(in_mat4: np.ndarray, in_vec3_array: np.ndarray, out_vec3_array:
     for i in range(in_vec3_array.shape[0]):
         out_vec3_array[i, :] = np.dot(in_mat4[:3, :3], in_vec3_array[i, :]) + in_mat4[:3, 3]
 
-        # Chat GPT4 suggestion to replace the np.dot because of the warnings
-        #for j in range(3):  # Iterate over each component of the vector
-        #    out_vec3_array[i, j] = (in_mat4[j, 0] * in_vec3_array[i, 0] +
-        #                            in_mat4[j, 1] * in_vec3_array[i, 1] +
-        #                            in_mat4[j, 2] * in_vec3_array[i, 2] +
-        #                            in_mat4[j, 3])
+
+@njit(cache=True)
+def mul_vectors3_rotation_only(in_mat4: np.ndarray, in_vec3_array: np.ndarray, out_vec3_array: np.ndarray):
+    for i in range(in_vec3_array.shape[0]):
+        out_vec3_array[i, :] = np.dot(in_mat4[:3, :3], in_vec3_array[i, :])
 
 
 @njit(cache=True)

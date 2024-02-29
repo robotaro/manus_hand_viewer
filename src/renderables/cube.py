@@ -1,5 +1,5 @@
 from src.renderables.renderable import Renderable
-from src.mesh_factory import MeshFactory
+from src import meshes_3d
 import numpy as np
 
 
@@ -14,12 +14,11 @@ class Cube(Renderable):
         self.attributes = ['in_position', 'in_normal', 'in_color']
 
     def get_vertex_data(self):
-        factory = MeshFactory()
 
-        mesh_data = factory.create_box(width=self.params.get("width", 1.0),
-                                       height=self.params.get("height", 1.0),
-                                       depth=self.params.get("depth", 1.0),
-                                       color=self.params.get("color", (0.85, 0.85, 0.85)),)
+        mesh_data = meshes_3d.create_box(width=self.params.get("width", 1.0),
+                                         height=self.params.get("height", 1.0),
+                                         depth=self.params.get("depth", 1.0),
+                                         color=self.params.get("color", (0.85, 0.85, 0.85)),)
 
         return np.hstack([mesh_data["vertices"],
                           mesh_data["normals"],

@@ -8,15 +8,26 @@ import constants
 
 class Camera:
 
-    def __init__(self, window_size: tuple, position=(0, 0, -4), yaw=-np.pi/2.0, pitch=0):
+    def __init__(self, window_size: tuple, position=(6, 6, 6), target=(0, 1, 4)):
 
         self.aspect_ratio = window_size[0] / window_size[1]
         self.position = glm.vec3(position)
+        self.target = glm.vec3(target)
+
         self.right = glm.vec3(1, 0, 0)
         self.up = glm.vec3(0, 1, 0)
-        self.forward = glm.vec3(0, 0, 1)
-        self.yaw = yaw
-        self.pitch = pitch
+        self.forward = glm.normalize(self.target - self.position)
+
+        # Calculate yaw and pitch from the direction vector
+        self.yaw = glm.atan(self.forward.z, self.forward.x)
+        self.pitch = glm.asin(self.forward.y)
+
+        # Ensure yaw is in the range of [-π, π]
+        if self.yaw < -glm.pi():
+            self.yaw += 2 * glm.pi()
+        elif self.yaw > glm.pi():
+            self.yaw -= 2 * glm.pi()
+
         self.view_matrix = self.calculate_view_matrix()
         self.projection_matrix = self.calculate_projection_matrix()
 
@@ -99,11 +110,7 @@ class Camera:
         imgui.spacing()
 
         # imgui.set_window_position(300, 150)
-        imgui.set_window_size(500, 500)
-
-        # ======================================================================
-        #                 List all available entities in the scene
-        # ======================================================================
+        #imgui.set_window_size(500, 500)
 
         # draw text label inside of current window
         imgui.end()

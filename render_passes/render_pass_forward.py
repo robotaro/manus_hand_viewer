@@ -33,7 +33,7 @@ class RenderPassForward(RenderPass):
         # Render objects
         for renderable in renderables:
 
-            self.program['m_model'].write(renderable.model_matrix)
+            self.program['m_model'].write(renderable.world_matrix)
             renderable.render(program_name=self.program_name)
 
 

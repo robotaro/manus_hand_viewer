@@ -8,42 +8,19 @@ class Cube(Renderable):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        vertex_data = self.get_vertex_data(scale=self.params.get("scale", 1.0))
-        self.vbo = self.ctx.buffer(vertex_data.astype("f4").tobytes())
+        self.vbo = self.ctx.buffer(self.get_vertex_data().astype("f4").tobytes())
 
-        self.format = "3f 3f"
-        self.attributes = ['in_position', 'in_normal']
+        self.format = "3f 3f 3f"
+        self.attributes = ['in_position', 'in_normal', 'in_color']
 
-    @staticmethod
-    def get_data(vertices, indices):
-        data = [vertices[ind] for triangle in indices for ind in triangle]
-        return np.array(data, dtype='f4')
+    def get_vertex_data(self):
+        factory = MeshFactory()
 
-    def get_vertex_data(self, scale=1.0):
-        vertices = [(-scale, -scale, scale),
-                    (scale, -scale, scale),
-                    (scale, scale, scale),
-                    (-scale, scale, scale),
-                    (-scale, scale, -scale),
-                    (-scale, -scale, -scale),
-                    (scale, -scale, -scale),
-                    (scale, scale, -scale)]
+        mesh_data = factory.create_box(width=self.params.get("width", 1.0),
+                                       height=self.params.get("height", 1.0),
+                                       depth=self.params.get("depth", 1.0),
+                                       color=self.params.get("color", (0.85, 0.85, 0.85)),)
 
-        indices = [(0, 2, 3), (0, 1, 2),
-                   (1, 7, 2), (1, 6, 7),
-                   (6, 5, 4), (4, 7, 6),
-                   (3, 4, 5), (3, 5, 0),
-                   (3, 7, 4), (3, 2, 7),
-                   (0, 6, 1), (0, 5, 6)]
-        vertex_data = self.get_data(vertices, indices)
-
-        normals = [( 0, 0, 1) * 6,
-                   ( 1, 0, 0) * 6,
-                   ( 0, 0,-1) * 6,
-                   (-1, 0, 0) * 6,
-                   ( 0, 1, 0) * 6,
-                   ( 0,-1, 0) * 6,]
-        normals = np.array(normals, dtype='f4').reshape(36, 3)
-
-        vertex_data = np.hstack([vertex_data, normals])
-        return vertex_data
+        return np.hstack([mesh_data["vertices"],
+                          mesh_data["normals"],
+                          mesh_data["colors"]])

@@ -1,5 +1,6 @@
 import glm
 import glfw
+import imgui
 import numpy as np
 
 import constants
@@ -86,3 +87,23 @@ class Camera:
             self.aspect_ratio,
             constants.CAMERA_NEAR,
             constants.CAMERA_FAR)
+
+    def on_imgui(self):
+        imgui.begin(f"Scene", True)
+
+        imgui.text(f"Camera")
+        _, new_position = imgui.drag_float3("Position", *self.position, 0.01)
+        self.position = new_position
+        _, self.yaw = imgui.drag_float("Yaw", self.yaw, 0.1)
+        _, self.pitch = imgui.drag_float("Pitch", self.pitch, 0.1)
+        imgui.spacing()
+
+        # imgui.set_window_position(300, 150)
+        imgui.set_window_size(500, 500)
+
+        # ======================================================================
+        #                 List all available entities in the scene
+        # ======================================================================
+
+        # draw text label inside of current window
+        imgui.end()

@@ -3,6 +3,8 @@ import moderngl
 import time
 import signal
 import numpy as np
+from typing import Callable
+import inspect
 
 import imgui
 from imgui.integrations.glfw import GlfwRenderer
@@ -26,7 +28,7 @@ from render_passes.render_pass_shadow import RenderPassShadow
 from render_passes.render_pass_hello_world import RenderPassHelloWorld
 
 
-class App:
+class Engine:
 
     def __init__(self,
                  window_title="Manus Hand Viewer",
@@ -37,6 +39,10 @@ class App:
         # Logging
         self.logger = utils_logging.get_logger()
         self.logger.setLevel(level=constants.LOGGING_MAP[log_level])
+
+        # External callbacks
+        self.external_update_callback = None
+        self.external_imgui_callback = None
 
         if not glfw.init():
             raise ValueError("[ERROR] Failed to initialize GLFW")
@@ -88,13 +94,16 @@ class App:
         self.camera = Camera(window_size=window_size)
         self.scene = Scene(ctx=self.ctx, texture_library=self.texture_library)
 
+        # Register Render Passes
         self.scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
         self.scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
 
+        # Register Renderables
         self.scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
         self.scene.register_renderable(type_id="cube", renderable_class=Cube)
         self.scene.register_renderable(type_id="cylinder", renderable_class=Cylinder)
 
+        # Add basic light
         self.scene.directional_lights.append(Light())
 
         # Flags
@@ -126,6 +135,22 @@ class App:
             self.window_glfw,
             int(pos[0] + (mode.size.width - size[0]) / 2),
             int(pos[1] + (mode.size.height - size[1]) / 2))
+
+    def set_external_update_callback(self, callback_function):
+        signature = inspect.signature(callback_function)
+        parameters = signature.parameters.values()
+        if len(parameters) == 1:
+            self.external_update_callback = callback_function
+        else:
+            raise ValueError("Provided function must take exactly one argument (delta_time).")
+
+    def set_external_imgui_callback(self, callback_function):
+        signature = inspect.signature(callback_function)
+        parameters = signature.parameters.values()
+        if len(parameters) == 0:
+            self.external_imgui_callback = callback_function
+        else:
+            raise ValueError("Provided function must take no arguments")
 
     def callback_signal_handler(self, signum, frame):
         self.logger.debug("Signal received : Closing editor now")
@@ -162,10 +187,15 @@ class App:
 
             self.camera.update(delta_time=delta_time, keyboard_state=self.keyboard_state)
 
+            if self.external_update_callback:
+                self.external_update_callback(delta_time)
+
             self.scene.render(camera=self.camera)
 
             self.imgui_menu_bar()
-            self.imgui_scene_window()
+            self.camera.on_imgui()
+            if self.external_imgui_callback:
+                self.external_imgui_callback()
             self.imgui_exit_modal()
             self.imgui_stop()
 
@@ -256,28 +286,6 @@ class App:
                 clicked, selected = imgui.menu_item("Preferences", "Ctrl + Q", False, True)
 
                 imgui.end_menu()
-
-    def imgui_scene_window(self):
-
-        # open new window context
-        imgui.begin(f"Scene", True)
-
-        imgui.text(f"Camera")
-        _, new_position = imgui.drag_float3("Position", *self.camera.position, 0.01)
-        self.camera.position = new_position
-        _, self.camera.yaw = imgui.drag_float("Yaw", self.camera.yaw, 0.1)
-        _, self.camera.pitch = imgui.drag_float("Yaw", self.camera.pitch, 0.1)
-        imgui.spacing()
-
-        # imgui.set_window_position(300, 150)
-        imgui.set_window_size(500, 500)
-
-        # ======================================================================
-        #                 List all available entities in the scene
-        # ======================================================================
-
-        # draw text label inside of current window
-        imgui.end()
 
     def imgui_exit_modal(self):
 

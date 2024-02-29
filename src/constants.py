@@ -55,8 +55,9 @@ KEY_LEFT_CTRL = 29
 KEY_LEFT_SHIFT = 42
 KEY_LEFT_ALT = 56
 
-
-# IO
+# ===============================================================================
+#                                  Hand
+# ===============================================================================
 TERMINAL_RE_PATTERN = (r"datetime\.datetime\((\d{4}, \d{1,2}, \d{1,2}, \d{1,2}, "
                        r"\d{1,2}, \d{1,2}, \d{1,6})\), \[([-\d\., ']+)\]")
 
@@ -67,6 +68,8 @@ FINGER_NAMES = [
     "ring",
     "pinky"
 ]
+
+FINGER_JOINT_ORDER = ['cmc', 'mcp', 'pip', 'dip', 'tip']
 
 # Joint axis labels
 THUMB_CMC_X = "thumb_cmc_x"

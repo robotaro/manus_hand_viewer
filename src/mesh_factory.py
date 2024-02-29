@@ -51,7 +51,7 @@ class MeshFactory:
     def create_composite_mesh(self, shape_list: list):
 
         """
-        Input should be a list of dictionaries descrybing the shape
+        Input should be a list of dictionaries describing the shape
         :param shape_list:
         :return:
         """

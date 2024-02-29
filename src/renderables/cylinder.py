@@ -15,7 +15,7 @@ class Cylinder(Renderable):
 
     def get_vertex_data(self):
 
-        factory = MeshFactory()
+        factory = MeshFactory(use_triangle_normals=False)
 
         mesh_data = factory.create_cylinder(point_a=(0.0, 0.0, 0.0),
                                             point_b=(0.0, 1.0, 0.0),
@@ -24,5 +24,5 @@ class Cylinder(Renderable):
                                             sections=16)
 
         return np.hstack([mesh_data["vertices"],
-                                 mesh_data["normals"],
-                                 mesh_data["colors"]])
+                          mesh_data["normals"],
+                          mesh_data["colors"]])

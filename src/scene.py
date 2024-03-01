@@ -45,7 +45,7 @@ class Scene:
                 render_pass.program,
                 # TODO: You can change this list to individual VBOs!
                 [(new_renderable.vbo, new_renderable.format, *new_renderable.attributes)],
-                new_renderable.ibo,
+                new_renderable.ibo_indices,
                 skip_errors=True)
 
         self.renderables.append(new_renderable)

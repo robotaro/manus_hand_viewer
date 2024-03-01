@@ -49,6 +49,7 @@ def create_composite_mesh(shape_blueprint_list: list):
     normals_list = []
     colors_list = []
     indices_list = []
+    total_num_vertices = 0
 
     for blueprint_index, shape_blueprint in enumerate(shape_blueprint_list):
 
@@ -64,16 +65,16 @@ def create_composite_mesh(shape_blueprint_list: list):
         normals_list.append(mesh_data["normals"])
         colors_list.append(mesh_data["colors"])
 
-        # TODO: INdices need to increment as each shape is added!!!!
-        if "indices" in mesh_data:
-            indices_list.append(mesh_data["indices"])
+        mesh_data["indices"] += total_num_vertices
+        indices_list.append(mesh_data["indices"])
+        total_num_vertices += mesh_data["vertices"].shape[0]
 
     # And Assemble final mesh here
     return {
         KEY_PRIMITIVE_VERTICES: np.concatenate(vertices_list, axis=0),
         KEY_PRIMITIVE_NORMALS: np.concatenate(normals_list, axis=0),
         KEY_PRIMITIVE_COLORS: np.concatenate(colors_list, axis=0),
-        KEY_PRIMITIVE_INDICES: np.concatenate(indices_list, axis=0) if len(indices_list) > 0 else None
+        KEY_PRIMITIVE_INDICES: np.concatenate(indices_list, axis=0)
     }
 
 
@@ -89,11 +90,9 @@ def create_mesh(shape: str, params: dict) -> dict:
         point_b = params.get(KEY_POINT_B, (0, 0, DEFAULT_HEIGHT))
         radius = params.get(KEY_RADIUS, DEFAULT_RADIUS)
         sections = params.get(KEY_SECTIONS, DEFAULT_CYLINDER_SECTIONS)
-
         primitive = trimesh.creation.cylinder(segment=(point_a, point_b),
                                               radius=radius,
                                               sections=sections)
-
         vertices = np.array(primitive.vertices).astype('f4')
         normals = np.array(primitive.vertex_normals).astype('f4')
         indices = np.array(primitive.faces).astype('i4')
@@ -103,45 +102,46 @@ def create_mesh(shape: str, params: dict) -> dict:
         width = params.get(KEY_WIDTH, 1.0)
         height = params.get(KEY_HEIGHT, 1.0)
         depth = params.get(KEY_DEPTH, 1.0)
-
-        box = trimesh.creation.box(extents=(width, height, depth))
-
-        vertices = np.array(box.vertices).astype('f4')
-        normals = np.array(box.vertex_normals).astype('f4')
-        indices = np.array(box.faces).astype('i4')
+        primitive = trimesh.creation.box(extents=(width, height, depth))
+        vertices = np.array(primitive.vertices).astype('f4')
+        normals = np.array(primitive.vertex_normals).astype('f4')
+        indices = np.array(primitive.faces).astype('i4')
 
     elif shape == KEY_SHAPE_CONE:
-        pass
+        radius = params.get(KEY_RADIUS, 0.5)
+        height = params.get(KEY_HEIGHT, 0.5)
+        segments = params.get(KEY_SECTIONS, 32)
+        primitive = trimesh.creation.cone(radius=radius, height=height, sections=segments)
+        vertices = np.array(primitive.vertices).astype('f4')
+        normals = np.array(primitive.vertex_normals).astype('f4')
+        indices = np.array(primitive.faces).astype('i4')
 
     elif shape == KEY_SHAPE_ICOSPHERE:
         radius = params.get(KEY_RADIUS, DEFAULT_RADIUS)
         subdivisions = params.get(KEY_SUBDIVISIONS, DEFAULT_SUBDIVISIONS)
-
-        icosphere = trimesh.creation.icosphere(radius=radius, subdivisions=subdivisions)
-
-        vertices = np.array(icosphere.vertices).astype('f4')
-        normals = np.array(icosphere.vertex_normals).astype('f4')
-        indices = np.array(icosphere.faces).astype('i4')
+        primitive = trimesh.creation.icosphere(radius=radius, subdivisions=subdivisions)
+        vertices = np.array(primitive.vertices).astype('f4')
+        normals = np.array(primitive.vertex_normals).astype('f4')
+        indices = np.array(primitive.faces).astype('i4')
 
     elif shape == KEY_SHAPE_CAPSULE:
-        pass
+        radius = params.get(KEY_RADIUS, 0.25)
+        height = params.get(KEY_HEIGHT, 1.0)
+        segments = params.get(KEY_SEGMENTS, 16)
+        primitive = trimesh.creation.capsule(height=height, radius=radius, count=segments)
+        vertices = np.array(primitive.vertices).astype('f4')
+        normals = np.array(primitive.vertex_normals).astype('f4')
+        indices = np.array(primitive.faces).astype('i4')
 
     else:
         raise Exception(f"[ERROR] Shape '{shape}' not supported")
 
     color = params.get("color", DEFAULT_COLOR)
     transform = params.get("transform", np.eye(4, dtype=np.float32))
-    use_triangle_normals = params.get("use_triangle_normals", True)
 
     # Apply transform to both vertices and normals
     mat4.mul_vectors3(transform, vertices, vertices)
     mat4.mul_vectors3_rotation_only(transform, normals, normals)
-
-    if use_triangle_normals:
-        vertices, normals, _ = convert_faces_to_triangles(vertices=vertices,
-                                                          uvs=None,
-                                                          faces=indices)
-        indices = None
 
     # All vertices receive the same color
     colors = np.tile(np.array(color, dtype=np.float32), (vertices.shape[0], 1))
@@ -150,43 +150,7 @@ def create_mesh(shape: str, params: dict) -> dict:
         KEY_PRIMITIVE_VERTICES: vertices,
         KEY_PRIMITIVE_NORMALS: normals,
         KEY_PRIMITIVE_COLORS: colors,
-        KEY_PRIMITIVE_INDICES: indices,
-    }
-
-
-def create_box(width: float,
-               height: float,
-               depth: float,
-               color=None,
-               transform=None,
-               use_triangle_normals=True) -> dict:
-
-    if color is None:
-        color = DEFAULT_COLOR
-
-    if transform is None:
-        transform = np.eye(4, dtype=np.float32)
-
-    box = trimesh.creation.box(extents=(width, height, depth))
-
-    vertices = np.array(box.vertices).astype('f4')
-    normals = np.array(box.vertex_normals).astype('f4')
-    indices = np.array(box.faces).astype('i4')
-    mat4.mul_vectors3(transform, vertices, vertices)
-
-    if use_triangle_normals:
-        vertices, normals, _ = convert_faces_to_triangles(vertices=vertices,
-                                                          uvs=None,
-                                                          faces=indices)
-        indices = None
-
-    colors = np.tile(np.array(color, dtype=np.float32), (vertices.shape[0], 1))
-
-    return {
-        KEY_PRIMITIVE_VERTICES: vertices,
-        KEY_PRIMITIVE_NORMALS: normals,
-        KEY_PRIMITIVE_COLORS: colors,
-        KEY_PRIMITIVE_INDICES: indices,
+        KEY_PRIMITIVE_INDICES: indices
     }
 
 

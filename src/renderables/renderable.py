@@ -1,5 +1,6 @@
 import moderngl
 import glm
+import numpy as np
 
 
 class Renderable:
@@ -8,14 +9,19 @@ class Renderable:
 
         self.ctx = ctx
         self.children = children if children is not None else []
-        self.vbo = None
+        self.params = params if params is not None else {}
+
+        mesh_data = self.get_vertex_data()
+        concatenated_data = np.hstack([mesh_data["vertices"],
+                                       mesh_data["normals"],
+                                       mesh_data["colors"]])
+        self.vbo = self.ctx.buffer(concatenated_data.astype("f4").tobytes())
+        self.ibo_indices = self.ctx.buffer(mesh_data["indices"].astype("i4").tobytes())
+        self.format, self.attributes = self.get_format_and_attributes()
+
         self.vaos = {}
-        self.ibo = None
-        self.format = None
-        self.attributes = None
         self.program = None
         self.render_mode = moderngl.TRIANGLES
-        self.params = params if params is not None else {}
 
         # Transform parameters
         self.position = glm.vec3(self.params.get("position", (0, 0, 0)))
@@ -47,6 +53,9 @@ class Renderable:
     def get_vertex_data(self):
         pass
 
+    def get_format_and_attributes(self) -> tuple:
+        pass
+
     def render(self, program_name: str):
         self.vaos[program_name].render(self.render_mode)
 
@@ -63,8 +72,8 @@ class Renderable:
         return m_model
 
     def release(self):
-        if self.vao:
-            self.vao.release()
+        for _, vao in self.vaos.items():
+            vao.release()
         if self.vbo:
             self.vbo.release()
 

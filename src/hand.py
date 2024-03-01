@@ -6,9 +6,7 @@ from utilities import utils_io
 from src import constants
 
 HAND_SCALE = 50
-HAND_RENDERABLE_PARENT_CHILD = {
-    "root": {""}
-}
+
 
 class Hand:
 
@@ -62,8 +60,9 @@ class Hand:
 
             if key == "root":
                 renderables[key] = self.engine.scene.create_renderable(
-                    type_id="cube",
-                    params={"position": blueprint["position"],
+                    type_id="mesh",
+                    params={"shape": "box",
+                            "position": blueprint["position"],
                             "width": 0.5,
                             "height": 0.1,
                             "depth": 0.1,
@@ -71,21 +70,23 @@ class Hand:
                 continue
 
             finger_name, joint_name = key.split("_")
-            #if joint_name == "mcp":
-            """renderables[key] = self.engine.scene.create_renderable(
-                type_id="cylinder",
-                params={"position": blueprint["position"],
-                        "point_a": (0, 0, 0),
-                        "point_b": blueprint["bone_vector"],
-                        "radius": 0.05,
-                        "segments": 32,
-                        "color": (0.1, 0.8, 0.0)})
 
-            continue"""
+            if joint_name == "mcp":
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="finger_mcp_joint",
+                    params={"position": blueprint["position"],
+                            "bone_length": blueprint["bone_length"],
+                            "bone_radius": 0.1,
+                            "joint_radius": 0.15,
+                            "color_bone": (0.1, 0.8, 0.0),
+                            "color_joint": (0.1, 0.8, 0.0)})
+
+                continue
 
             renderables[key] = self.engine.scene.create_renderable(
-                type_id="cube",
-                params={"position": blueprint["position"],
+                type_id="mesh",
+                params={"shape": "box",
+                        "position": blueprint["position"],
                         "width": 0.1,
                         "height": 0.1,
                         "depth": 0.1,
@@ -95,9 +96,9 @@ class Hand:
         for (parent_key, child_key) in constants.RENDERABLES_PARENT_CHILD:
             if child_key not in renderables:
                 continue
-            print(f"{parent_key} -> {child_key}")
             renderables[parent_key].children.append(renderables[child_key])
 
+        # Step 4) Trigger update on all transforms so that their world matrices are validated
         renderables["root"].update()
 
         return renderables

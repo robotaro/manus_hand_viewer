@@ -69,7 +69,7 @@ FINGER_NAMES = [
     "pinky"
 ]
 
-FINGER_JOINT_ORDER = ['cmc', 'mcp', 'pip', 'dip', 'tip']
+FINGER_JOINT_ORDER = ['cmc', 'mcp', 'ip', 'pip', 'dip', 'tip']
 
 # Joint axis labels
 THUMB_CMC_X = "thumb_cmc_x"
@@ -120,3 +120,29 @@ JOINT_NAMES = [
     PINKY_DIP_X
 ]
 
+RENDERABLES_PARENT_CHILD = [
+    ("root", "thumb_cmc"),
+    ("thumb_cmc", "thumb_mcp"),
+    ("thumb_mcp", "thumb_ip"),
+    ("thumb_ip", "thumb_tip"),
+
+    ("root", "index_mcp"),
+    ("index_mcp", "index_pip"),
+    ("index_pip", "index_dip"),
+    ("index_dip", "index_tip"),
+
+    ("root", "middle_mcp"),
+    ("middle_mcp", "middle_pip"),
+    ("middle_pip", "middle_dip"),
+    ("middle_dip", "middle_tip"),
+
+    ("root", "ring_mcp"),
+    ("ring_mcp", "ring_pip"),
+    ("ring_pip", "ring_dip"),
+    ("ring_dip", "ring_tip"),
+
+    ("root", "pinky_mcp"),
+    ("pinky_mcp", "pinky_pip"),
+    ("pinky_pip", "pinky_dip"),
+    ("pinky_dip", "pinky_tip"),
+]

@@ -1,9 +1,14 @@
 import glm
+import copy
 from src.engine import Engine
 from utilities import utils_io
 
 from src import constants
 
+HAND_SCALE = 50
+HAND_RENDERABLE_PARENT_CHILD = {
+    "root": {""}
+}
 
 class Hand:
 
@@ -18,55 +23,131 @@ class Hand:
 
         self.hand_config = utils_io.load_hand_configuration(yaml_fpath=hand_config_yaml_fpath)
         self.hand_animation = utils_io.load_data_in_terminal_format(txt_fpath=hand_animation_txt_fpath)
-
-        self.renderables = {}
+        self.renderables = self.create_renderables()
 
         self.animation_timestamp = 0
 
         # Flags
         self.right_hand = True
 
-        self.create_renderable_hand()
+    def create_renderables(self) -> dict:
 
-    def create_renderable_hand(self):
+        # Step 1) Create all blueprints
+        blueprints = {}
+        for (parent_key, child_key) in constants.RENDERABLES_PARENT_CHILD:
 
-        root = self.engine.scene.create_renderable(
+            if parent_key == "root":
+                blueprints["root"] = {"position": glm.vec3(0, 0, 0)}
+                continue
+
+            finger_name, joint_name = parent_key.split("_")
+            parent_joint = self.hand_config[finger_name][joint_name]
+            finger_name, joint_name = child_key.split("_")
+            child_joint = self.hand_config[finger_name][joint_name]
+
+            parent_position = glm.vec3(parent_joint["position"])
+            child_position = glm.vec3(child_joint["position"])  # relative position to parent
+            bone_length = glm.length(child_position)
+            bone_vector = child_position
+
+            blueprints[parent_key] = {
+                "position": parent_position * HAND_SCALE,
+                "bone_length": bone_length * HAND_SCALE,
+                "bone_vector": bone_vector * HAND_SCALE
+            }
+
+        # Step 2) Create renderable based on blueprints
+        renderables = {}
+        for key, blueprint in blueprints.items():
+
+            if key == "root":
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="cube",
+                    params={"position": blueprint["position"],
+                            "width": 0.5,
+                            "height": 0.1,
+                            "depth": 0.1,
+                            "color": (0.0, 1.0, 1.0)})
+                continue
+
+            finger_name, joint_name = key.split("_")
+            #if joint_name == "mcp":
+            renderables[key] = self.engine.scene.create_renderable(
+                type_id="cylinder",
+                params={"position": blueprint["position"],
+                        "point_a": (0, 0, 0),
+                        "point_b": blueprint["bone_vector"],
+                        "radius": 0.05,
+                        "segments": 32,
+                        "color": (0.1, 0.8, 0.0)})
+
+            continue
+
+
+
+            """renderables[key] = self.engine.scene.create_renderable(
+                type_id="cube",
+                params={"position": blueprint["position"],
+                        "width": 0.1,
+                        "height": 0.1,
+                        "depth": 0.1,
+                        "color": (1.0, 0.0, 0.0)})"""
+
+
+        # Step 3) Connect renderables hierarchically
+        for (parent_key, child_key) in constants.RENDERABLES_PARENT_CHILD:
+            if child_key not in renderables:
+                continue
+            renderables[parent_key].children.append(renderables[child_key])
+
+        renderables["root"].update()
+
+        return renderables
+
+    def create_fingers(self) -> dict:
+
+        self.renderables["root"] = self.engine.scene.create_renderable(
             type_id="cube",
             params={"position": (0, 0, 0),
-                    "width": 0.1,
+                    "width": 0.5,
                     "height": 0.1,
                     "depth": 0.1,
                     "color": (0.0, 1.0, 1.0)})
 
-        for finger_name, finger in self.hand_config.items():
+        fingers = {key: [] for key, _ in self.hand_config.items()}
 
-            previous_renderable = None
+        # Create renderables
+        for finger_name, finger_blueprint in self.hand_config.items():
+
+            previous_joint = None
+
+            # Per Joint
             for index, joint_name in enumerate(constants.FINGER_JOINT_ORDER):
 
-                if joint_name not in finger:
+                current_joint = finger_blueprint.get(joint_name, None)
+                if current_joint is None:
                     continue
+                current_joint = copy.copy(current_joint)
 
-                joint_params = finger[joint_name]
-                position = glm.vec3(joint_params["position"]) * 50
-                new_renderable = self.engine.scene.create_renderable(
-                    type_id="cube",
-                    params={"position": position,
-                            "width": 0.1,
-                            "height": 0.1,
-                            "depth": 0.1,
-                            "color": (0.8, 0.0, 0.0)})
-
-                # Store this renderable for animating it later
-                renderable_id = f"{finger_name}_{joint_name}"
-                self.renderables[renderable_id] = new_renderable
+                if joint_name == "mcp":
+                    current_joint["renderable"] = self.engine.scene.create_renderable(
+                        type_id="cube",
+                        params={"position": current_joint["position"],
+                                "width": 0.1,
+                                "height": 0.1,
+                                "depth": 0.1,
+                                "color": (0.8, 0.0, 0.0)})
 
                 if index == 0:
-                    root.children.append(new_renderable)
-                    previous_renderable = new_renderable
+                    self.renderables["root"].children.append(current_joint["renderable"])
+                    previous_renderable = current_joint["renderable"]
                     continue
 
-                previous_renderable.children.append(new_renderable)
-                previous_renderable = new_renderable
+                previous_renderable.children.append(current_joint["renderable"])
+                previous_renderable = current_joint["renderable"]
+
+        # Add hierarchy to renderables
+
         root.update()
 
     def update_animation(self, delta_time):

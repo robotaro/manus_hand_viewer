@@ -19,6 +19,7 @@ from utilities import utils_logging
 
 # Renderables
 from src.renderables.cube import Cube
+from src.renderables.cylinder import Cylinder
 from src.renderables.hello_triangle import HelloTriangle
 from src.renderables.finger_mcp_joint import FingerMCPJoint
 
@@ -167,6 +168,7 @@ class Engine:
         # Register Renderables
         new_scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
         new_scene.register_renderable(type_id="cube", renderable_class=Cube)
+        new_scene.register_renderable(type_id="cylinder", renderable_class=Cylinder)
         new_scene.register_renderable(type_id="finger_mcp_joint", renderable_class=FingerMCPJoint)
 
         return new_scene

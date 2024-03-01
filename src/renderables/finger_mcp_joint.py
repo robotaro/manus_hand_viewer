@@ -26,7 +26,7 @@ class FingerMCPJoint(Renderable):
                 "radius": joint_radius * 0.8
             },
             {
-                "shape": "create_icosphere",
+                "shape": "icosphere",
                 "radius": joint_radius
             },
         ]

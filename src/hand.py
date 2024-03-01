@@ -45,15 +45,15 @@ class Hand:
             finger_name, joint_name = child_key.split("_")
             child_joint = self.hand_config[finger_name][joint_name]
 
-            parent_position = glm.vec3(parent_joint["position"])
-            child_position = glm.vec3(child_joint["position"])  # relative position to parent
+            parent_position = glm.vec3(parent_joint["position"]) * HAND_SCALE
+            child_position = glm.vec3(child_joint["position"]) * HAND_SCALE  # relative position to parent
             bone_length = glm.length(child_position)
             bone_vector = child_position
 
             blueprints[parent_key] = {
-                "position": parent_position * HAND_SCALE,
-                "bone_length": bone_length * HAND_SCALE,
-                "bone_vector": bone_vector * HAND_SCALE
+                "position": parent_position,
+                "bone_length": bone_length,
+                "bone_vector": bone_vector
             }
 
         # Step 2) Create renderable based on blueprints
@@ -72,7 +72,7 @@ class Hand:
 
             finger_name, joint_name = key.split("_")
             #if joint_name == "mcp":
-            renderables[key] = self.engine.scene.create_renderable(
+            """renderables[key] = self.engine.scene.create_renderable(
                 type_id="cylinder",
                 params={"position": blueprint["position"],
                         "point_a": (0, 0, 0),
@@ -81,23 +81,21 @@ class Hand:
                         "segments": 32,
                         "color": (0.1, 0.8, 0.0)})
 
-            continue
+            continue"""
 
-
-
-            """renderables[key] = self.engine.scene.create_renderable(
+            renderables[key] = self.engine.scene.create_renderable(
                 type_id="cube",
                 params={"position": blueprint["position"],
                         "width": 0.1,
                         "height": 0.1,
                         "depth": 0.1,
-                        "color": (1.0, 0.0, 0.0)})"""
-
+                        "color": (1.0, 0.0, 0.0)})
 
         # Step 3) Connect renderables hierarchically
         for (parent_key, child_key) in constants.RENDERABLES_PARENT_CHILD:
             if child_key not in renderables:
                 continue
+            print(f"{parent_key} -> {child_key}")
             renderables[parent_key].children.append(renderables[child_key])
 
         renderables["root"].update()

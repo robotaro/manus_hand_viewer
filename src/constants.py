@@ -78,7 +78,7 @@ THUMB_MCP_X = "thumb_mcp_x"
 THUMB_IP_X = "thumb_ip_x"
 
 INDEX_MCP_X = "index_mcp_x"
-INDEX_MCP_Y = "index_mcp_Y"
+INDEX_MCP_Y = "index_mcp_y"
 INDEX_PIP_X = "index_pip_x"
 INDEX_DIP_X = "index_dip_x"
 

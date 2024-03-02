@@ -20,7 +20,7 @@ from utilities import utils_logging
 # Renderables
 from src.renderables.mesh import Mesh
 from src.renderables.hello_triangle import HelloTriangle
-from src.renderables.finger_mcp_joint import FingerMCPJoint
+from src.renderables.finger_joint import FingerJoint
 
 # Render passes
 from render_passes.render_pass_forward import RenderPassForward
@@ -167,7 +167,7 @@ class Engine:
         # Register Renderables
         new_scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
         new_scene.register_renderable(type_id="mesh", renderable_class=Mesh)
-        new_scene.register_renderable(type_id="finger_mcp_joint", renderable_class=FingerMCPJoint)
+        new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
 
         return new_scene
 

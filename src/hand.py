@@ -1,7 +1,9 @@
 import glm
-import copy
+import imgui
+import numpy as np
 from src.engine import Engine
 from utilities import utils_io
+import matplotlib.pyplot as plt
 
 from src import constants
 
@@ -16,14 +18,25 @@ class Hand:
                  hand_animation_txt_fpath: str):
 
         self.engine = engine
-        self.engine.set_external_update_callback(self.update_animation)
-        self.engine.set_external_imgui_callback(self.update_imgui)
+        self.engine.set_external_update_callback(self.on_update)
+        self.engine.set_external_imgui_callback(self.on_imgui)
 
         self.hand_config = utils_io.load_hand_configuration(yaml_fpath=hand_config_yaml_fpath)
-        self.hand_animation = utils_io.load_data_in_terminal_format(txt_fpath=hand_animation_txt_fpath)
+        self.hand_animation = utils_io.load_hand_animation(txt_fpath=hand_animation_txt_fpath)
+
         self.renderables = self.create_renderables()
 
-        self.animation_timestamp = 0
+        self.timestamps = self.hand_animation["timestamps"].values
+        self.joint_values = self.hand_animation.iloc[:, 1:].values
+        self.animation_duration = self.timestamps[-1]
+
+        #plt.plot(self.timestamps, self.joint_values, '-o')
+        #plt.show()
+
+        self.time_dilation_factor = 0.25
+        self.play_animation = True
+        self.playback_timestamp = 0
+        self.lower_index = 0
 
         # Flags
         self.right_hand = True
@@ -71,15 +84,69 @@ class Hand:
 
             finger_name, joint_name = key.split("_")
 
-            if joint_name == "mcp":
+            if joint_name == "mcp" and finger_name != "thumb":
                 renderables[key] = self.engine.scene.create_renderable(
-                    type_id="finger_mcp_joint",
+                    type_id="finger_joint",
                     params={"position": blueprint["position"],
                             "bone_length": blueprint["bone_length"],
                             "bone_radius": 0.1,
-                            "joint_radius": 0.15,
-                            "color_bone": (0.1, 0.8, 0.0),
-                            "color_joint": (0.1, 0.8, 0.0)})
+                            "joint_radius": 0.2,
+                            "joint_type": "xy"})
+
+                continue
+
+            if finger_name == "thumb":
+                if joint_name == "cmc":
+                    renderables[key] = self.engine.scene.create_renderable(
+                        type_id="finger_joint",
+                        params={"position": blueprint["position"],
+                                "bone_length": blueprint["bone_length"],
+                                "bone_radius": 0.1,
+                                "joint_radius": 0.2,
+                                "joint_type": "xy"})
+                    continue
+                if joint_name == "mcp":
+                    renderables[key] = self.engine.scene.create_renderable(
+                        type_id="finger_joint",
+                        params={"position": blueprint["position"],
+                                "bone_length": blueprint["bone_length"],
+                                "bone_radius": 0.1,
+                                "joint_radius": 0.2,
+                                "joint_color": (0.2, 0.8, 0.2),
+                                "joint_type": "y"})
+                    continue
+
+
+
+            if joint_name == "pip":
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="finger_joint",
+                    params={"position": blueprint["position"],
+                            "bone_length": blueprint["bone_length"],
+                            "bone_radius": 0.1,
+                            "joint_radius": 0.2,
+                            "joint_type": "x"})
+                continue
+
+            if joint_name == "dip":
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="finger_joint",
+                    params={"position": blueprint["position"],
+                            "bone_length": blueprint["bone_length"],
+                            "bone_radius": 0.1,
+                            "joint_radius": 0.2,
+                            "joint_type": "x"})
+
+                continue
+
+            if joint_name == "ip":
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="finger_joint",
+                    params={"position": blueprint["position"],
+                            "bone_length": blueprint["bone_length"],
+                            "bone_radius": 0.1,
+                            "joint_radius": 0.2,
+                            "joint_type": "x"})
 
                 continue
 
@@ -103,55 +170,85 @@ class Hand:
 
         return renderables
 
-    def create_fingers(self) -> dict:
+    def on_update(self, delta_time):
 
-        self.renderables["root"] = self.engine.scene.create_renderable(
-            type_id="cube",
-            params={"position": (0, 0, 0),
-                    "width": 0.5,
-                    "height": 0.1,
-                    "depth": 0.1,
-                    "color": (0.0, 1.0, 1.0)})
+        if self.play_animation:
+            self.playback_timestamp += delta_time * self.time_dilation_factor
+            if self.playback_timestamp > self.animation_duration:
+                self.playback_timestamp = 0.0
 
-        fingers = {key: [] for key, _ in self.hand_config.items()}
+        self.update_hand_joints_from_animation(query_timestamp=self.playback_timestamp)
 
-        # Create renderables
-        for finger_name, finger_blueprint in self.hand_config.items():
+        self.renderables["root"].update()
 
-            previous_joint = None
+    def on_imgui(self):
 
-            # Per Joint
-            for index, joint_name in enumerate(constants.FINGER_JOINT_ORDER):
+        imgui.begin(f"Hand Animation", True)
 
-                current_joint = finger_blueprint.get(joint_name, None)
-                if current_joint is None:
+        _, self.playback_timestamp = imgui.slider_float("Timestamp",
+                                                        self.playback_timestamp,
+                                                        0.0,
+                                                        self.animation_duration,
+                                                        "%.3f")
+        imgui.text(f"Index: {self.lower_index}")
+        _, self.play_animation = imgui.checkbox("Play animation", self.play_animation)
+        imgui.end()
+
+    def update_hand_joints_from_animation(self, query_timestamp: float):
+
+        self.lower_index = self.get_lower_index(query_timestamp=query_timestamp)
+
+        lower_index = self.lower_index
+        upper_index = np.minimum(lower_index + 1, self.timestamps.size - 1)
+
+        # Avoid division by zero and ensure valid interpolation
+        if self.timestamps[upper_index] == self.timestamps[lower_index]:
+            interpolated_values = self.joint_values[lower_index, :]
+
+        else:
+            # Linear interpolation
+            fraction = ((query_timestamp - self.timestamps[lower_index]) /
+                        (self.timestamps[upper_index] - self.timestamps[lower_index]))
+            interpolated_values = self.joint_values[lower_index, :] + fraction * (self.joint_values[upper_index, :] - self.joint_values[lower_index, :])
+
+        for renderable_name, renderable in self.renderables.items():
+
+            if renderable_name == "root":
+                continue
+
+            finger_name, joint_name = renderable_name.split("_")
+
+            matched_axes = [(column_index - 1, key) for column_index, key in enumerate(self.hand_animation.keys()) if key.startswith(renderable_name)]
+
+            for (column_index, matched_axis) in matched_axes:
+                angle = np.radians(interpolated_values[column_index])
+
+                if finger_name == "thumb":
+                    if joint_name == "cmc":  # MCP joints axis values are reversed
+                        if matched_axis.endswith("x"):
+                            renderable.rotation.x = angle
+                        elif matched_axis.endswith("y"):
+                            renderable.rotation.y = angle
+                        #renderable.rotation.y = np.pi/2.0
+                        continue
+
+                if joint_name == "mcp":  # MCP joints axis values are reversed
+                    if matched_axis.endswith("x"):
+                        renderable.rotation.y = angle
+                    elif matched_axis.endswith("y"):
+                        renderable.rotation.x = angle
                     continue
-                current_joint = copy.copy(current_joint)
 
-                if joint_name == "mcp":
-                    current_joint["renderable"] = self.engine.scene.create_renderable(
-                        type_id="cube",
-                        params={"position": current_joint["position"],
-                                "width": 0.1,
-                                "height": 0.1,
-                                "depth": 0.1,
-                                "color": (0.8, 0.0, 0.0)})
+                if matched_axis.endswith("x"):
+                    renderable.rotation.x = angle
+                elif matched_axis.endswith("y"):
+                    renderable.rotation.y = angle
 
-                if index == 0:
-                    self.renderables["root"].children.append(current_joint["renderable"])
-                    previous_renderable = current_joint["renderable"]
-                    continue
+    def get_lower_index(self, query_timestamp: float) -> int:
 
-                previous_renderable.children.append(current_joint["renderable"])
-                previous_renderable = current_joint["renderable"]
+        # Find indices for interpolation
+        lower_values_mask = self.timestamps <= query_timestamp
+        index = int(np.sum(lower_values_mask))
 
-        # Add hierarchy to renderables
 
-        root.update()
-
-    def update_animation(self, delta_time):
-        pass
-
-    def update_imgui(self):
-        pass
-
+        return np.minimum(index, self.timestamps.size -1 )

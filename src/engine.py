@@ -19,6 +19,7 @@ from utilities import utils_logging
 
 # Renderables
 from src.renderables.mesh import Mesh
+from src.renderables.chessboard_plane import ChessboardPlane
 from src.renderables.hello_triangle import HelloTriangle
 from src.renderables.finger_joint import FingerJoint
 
@@ -165,8 +166,10 @@ class Engine:
         new_scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
 
         # Register Renderables
-        new_scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
         new_scene.register_renderable(type_id="mesh", renderable_class=Mesh)
+        new_scene.register_renderable(type_id="chessboard_plane", renderable_class=ChessboardPlane)
+        new_scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
+
         new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
 
         return new_scene

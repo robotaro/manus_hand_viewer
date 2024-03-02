@@ -58,12 +58,17 @@ def load_hand_animation(txt_fpath: str, use_uniform_timestamps=True, ):
         df = pd.DataFrame(columns=columns, data=data)
 
         # Fix finger MCP joint swaps
+        selected_fingers = ["index", "middle", "ring", "pinky"]
+        for finger_name in selected_fingers:
+            df[f"{finger_name}_mcp_x"], df[f"{finger_name}_mcp_y"] = \
+                df[f"{finger_name}_mcp_y"], df[f"{finger_name}_mcp_x"]
 
-        # Fix thumb
-
-
-        # Fix joints
-        #df["index_mcp_x"], df["index_mcp_y"] = df["index_mcp_y"], df["index_mcp_x"]
+        # Fix thumb - Don't forget to use degrees here!
+        df["thumb_cmc_x"] = df["thumb_cmc_x"] + 90
+        df["thumb_cmc_y"] = df["thumb_cmc_y"] - 45
+        df["thumb_cmc_z"] = -90.0
+        df["thumb_mcp_x"] = df["thumb_mcp_x"]
+        df["thumb_ip_x"] = df["thumb_ip_x"]
 
         return df
 

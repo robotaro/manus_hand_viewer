@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from src import constants
 
-HAND_SCALE = 50
+HAND_SCALE = 35
 
 
 class Hand:
@@ -43,7 +43,7 @@ class Hand:
 
     def create_renderables(self) -> dict:
 
-        # Step 1) Create all blueprints
+        # Step 1) Create all joint blueprints
         blueprints = {}
         for (parent_key, child_key) in constants.RENDERABLES_PARENT_CHILD:
 
@@ -105,18 +105,16 @@ class Hand:
                                 "joint_radius": 0.2,
                                 "joint_type": "xy"})
                     continue
-                if joint_name == "mcp":
-                    renderables[key] = self.engine.scene.create_renderable(
-                        type_id="finger_joint",
-                        params={"position": blueprint["position"],
-                                "bone_length": blueprint["bone_length"],
-                                "bone_radius": 0.1,
-                                "joint_radius": 0.2,
-                                "joint_color": (0.2, 0.8, 0.2),
-                                "joint_type": "y"})
-                    continue
 
-
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="finger_joint",
+                    params={"position": blueprint["position"],
+                            "bone_length": blueprint["bone_length"],
+                            "bone_radius": 0.1,
+                            "joint_radius": 0.2,
+                            "joint_color": (0.2, 0.8, 0.2),
+                            "joint_type": "x"})
+                continue
 
             if joint_name == "pip":
                 renderables[key] = self.engine.scene.create_renderable(
@@ -168,6 +166,15 @@ class Hand:
         # Step 4) Trigger update on all transforms so that their world matrices are validated
         renderables["root"].update()
 
+        # Step 5) Add any other enviromental meshes necessary for renderi
+        self.engine.scene.create_renderable(
+            type_id="chessboard_plane",
+            params={
+                "position": (0, -4, 0),
+                "plane_size": 100,
+                "num_squares": 10
+            })
+
         return renderables
 
     def on_update(self, delta_time):
@@ -216,39 +223,21 @@ class Hand:
             if renderable_name == "root":
                 continue
 
-            finger_name, joint_name = renderable_name.split("_")
-
             matched_axes = [(column_index - 1, key) for column_index, key in enumerate(self.hand_animation.keys()) if key.startswith(renderable_name)]
 
             for (column_index, matched_axis) in matched_axes:
                 angle = np.radians(interpolated_values[column_index])
-
-                if finger_name == "thumb":
-                    if joint_name == "cmc":  # MCP joints axis values are reversed
-                        if matched_axis.endswith("x"):
-                            renderable.rotation.x = angle
-                        elif matched_axis.endswith("y"):
-                            renderable.rotation.y = angle
-                        #renderable.rotation.y = np.pi/2.0
-                        continue
-
-                if joint_name == "mcp":  # MCP joints axis values are reversed
-                    if matched_axis.endswith("x"):
-                        renderable.rotation.y = angle
-                    elif matched_axis.endswith("y"):
-                        renderable.rotation.x = angle
-                    continue
-
                 if matched_axis.endswith("x"):
                     renderable.rotation.x = angle
                 elif matched_axis.endswith("y"):
                     renderable.rotation.y = angle
+                elif matched_axis.endswith("z"):
+                    renderable.rotation.z = angle
 
     def get_lower_index(self, query_timestamp: float) -> int:
 
         # Find indices for interpolation
         lower_values_mask = self.timestamps <= query_timestamp
         index = int(np.sum(lower_values_mask))
-
 
         return np.minimum(index, self.timestamps.size -1 )

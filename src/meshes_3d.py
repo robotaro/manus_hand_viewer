@@ -121,6 +121,7 @@ def create_mesh(shape: str, params: dict) -> dict:
         constants.KEY_PRIMITIVE_INDICES: indices
     }
 
+
 def generate_box_mesh(width: float, height: float, depth: float):
     vertices = np.array([
         # Back face
@@ -168,14 +169,13 @@ def generate_box_mesh(width: float, height: float, depth: float):
     ], dtype='f4')
 
     # Indices for each triangle, since vertices are now unique per triangle, we just go sequentially
-    indices = np.array([
-        i for i in range(36)
-    ], dtype='i4')
+    indices = np.array([ i for i in range(36)], dtype='i4').reshape(-1, 3)
 
     return vertices, normals, indices
 
 
 def generate_cylinder_mesh(point_a, point_b, radius, num_sections):
+
     # ===========================================================
     #                          Common
     # ===========================================================
@@ -209,7 +209,7 @@ def generate_cylinder_mesh(point_a, point_b, radius, num_sections):
         indices.append([next_i,
                         num_sections + next_i,
                         num_sections + i])
-    middle_indices = np.array(indices, dtype='i4').flatten()
+    middle_indices = np.array(indices, dtype='i4')
     index_offset = middle_vertices.shape[0]
 
     # ===========================================================
@@ -226,7 +226,7 @@ def generate_cylinder_mesh(point_a, point_b, radius, num_sections):
         next_i = (i + 1) % num_sections
         indices.append([i + 1, next_i + 1, 0])  # +1 because we are avoiding the center vertex!
 
-    top_indices = np.array(indices, dtype='i4').flatten() + index_offset
+    top_indices = np.array(indices, dtype='i4') + index_offset
     index_offset += top_vertices.shape[0]
 
     # ===========================================================
@@ -234,8 +234,8 @@ def generate_cylinder_mesh(point_a, point_b, radius, num_sections):
     # ===========================================================
 
     bottom_normal = np.array([0, 0, -1], dtype='f4')
-    bottom_center_vertex = np.array([0, 0, length], dtype='f4')
-    bottom_vertices = np.vstack([bottom_center_vertex, circle_points + np.array([0, 0, 0])], dtype='f4')
+    bottom_center_vertex = np.array([0, 0, 0], dtype='f4')
+    bottom_vertices = np.vstack([bottom_center_vertex, circle_points], dtype='f4')
     bottom_normals = np.tile(bottom_normal, (bottom_vertices.shape[0], 1))
 
     indices = []
@@ -243,28 +243,19 @@ def generate_cylinder_mesh(point_a, point_b, radius, num_sections):
         next_i = (i + 1) % num_sections
         indices.append([next_i + 1, i + 1,  0])  # +1 because we are avoiding the center vertex!
 
-    bottom_indices = np.array(indices, dtype='i4').flatten() + index_offset
+    bottom_indices = np.array(indices, dtype='i4') + index_offset
 
-    """fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    # ===========================================================
+    #                        Apply Orientation
+    # ===========================================================
 
-    ax.scatter(middle_section_vertices[:, 0], middle_section_vertices[:, 1], middle_section_vertices[:, 2])
+    vertices = np.vstack([middle_vertices, top_vertices, bottom_vertices])
+    normals = np.vstack([middle_normals, top_normals, bottom_normals])
+    indices = np.vstack([middle_indices, top_indices, bottom_indices])
 
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    ax.set_aspect('equal', 'box')
-
-    plt.tight_layout()
-
-    plt.show()
-
-    # Calculate directional vector and length between points
     dir_vector = np.array(point_b) - np.array(point_a)
     length = np.linalg.norm(dir_vector)
     cylinder_axis = dir_vector / length
-
-    # Create a rotation matrix that aligns the z-axis to the cylinder axis
     z_axis = np.array([0, 0, 1])
     axis = np.cross(z_axis, cylinder_axis)
     axis_length = np.linalg.norm(axis)
@@ -278,69 +269,8 @@ def generate_cylinder_mesh(point_a, point_b, radius, num_sections):
     else:
         rotation_matrix = np.eye(3) if np.dot(z_axis, cylinder_axis) > 0 else np.eye(3) * np.array([1, 1, -1])
 
-    # Generate circle points
-    angle_step = 2 * np.pi / num_sections
-    circle_points = np.array([
-        [np.cos(i * angle_step) * radius, np.sin(i * angle_step) * radius, 0] for i in range(num_sections)
-    ])
-
-    # Rotate circle points and translate to create top and bottom vertices
-    top_vertices = np.dot(circle_points, rotation_matrix.T) + point_b
-    bottom_vertices = np.dot(circle_points, rotation_matrix.T) + point_a
-
-
-
-    # =========== Middle Section ========
-
-    middle_vertices = np.vstack((bottom_vertices, top_vertices))
-
-    # Normals
-    top_normal = dir_vector / np.linalg.norm(dir_vector)
-    top_normals = np.tile(top_normal, (num_sections, 1))
-    bottom_normals = np.tile(-top_normal, (num_sections, 1))
-
-    side_normals = np.vstack((
-        np.dot(circle_points[:, :3], rotation_matrix.T)[:, :3],
-        np.dot(circle_points[:, :3], rotation_matrix.T)[:, :3]
-    ))
-    normals = np.vstack((np.dot(bottom_normals, rotation_matrix.T),
-                         np.dot(top_normals, rotation_matrix.T),
-                         side_normals))
-
-    # Indices
-    indices = []
-    for i in range(num_sections):
-        next_i = (i + 1) % num_sections
-        # Sides - corrected to reference the duplicated vertices correctly
-        base_index_for_sides = 2 * num_sections  # Starting index for the side vertices
-
-        # First triangle
-        indices.append([base_index_for_sides + i,
-                        base_index_for_sides + next_i,
-                        base_index_for_sides + num_sections + i])
-        # Second triangle
-        indices.append([base_index_for_sides + next_i,
-                        base_index_for_sides + num_sections + next_i,
-                        base_index_for_sides + num_sections + i])
-
-    center_bottom_index = len(vertices) - 2
-    center_top_index = len(vertices) - 1
-
-    # Top Lid
-    for i in range(num_sections):
-        next_i = (i + 1) % num_sections
-        indices.append([num_sections + i,
-                        num_sections + next_i,
-                        center_top_index])
-
-    # Bottom lid
-    for i in range(num_sections):
-        next_i = (i + 1) % num_sections
-        indices.append([next_i, i, center_bottom_index])"""
-
-    vertices = np.vstack([middle_vertices, top_vertices, bottom_vertices])
-    normals = np.vstack([middle_normals, top_normals, bottom_normals])
-    indices = np.concatenate([middle_indices, top_indices, bottom_indices])
+    # Rotate and translate vertices to align with the orientation and begining of the segment
+    vertices = np.dot(vertices, rotation_matrix.astype('f4').T) + np.array(point_a, dtype='f4')
 
     return vertices, normals, indices
-    #return np.array(vertices, dtype='f4'), np.array(normals, dtype='f4'), np.array(indices, dtype='i4')
+

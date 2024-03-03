@@ -24,8 +24,8 @@ class Hand:
         self.hand_config = utils_io.load_hand_configuration(yaml_fpath=hand_config_yaml_fpath)
         self.hand_animation = utils_io.load_hand_animation(txt_fpath=hand_animation_txt_fpath)
 
-        #self.renderables = self.create_renderables()
-        self.renderables = self.create_demo_renderables()
+        self.renderables = self.create_renderables()
+        #self.renderables = self.create_demo_renderables()
 
         self.timestamps = self.hand_animation["timestamps"].values
         self.joint_values = self.hand_animation.iloc[:, 1:].values
@@ -118,12 +118,23 @@ class Hand:
                     params={"shape": "box",
                             "position": blueprint["position"],
                             "width": 0.5,
-                            "height": 0.1,
-                            "depth": 0.1,
-                            "color": (0.0, 1.0, 1.0)})
+                            "height": 0.5,
+                            "depth": 0.5,
+                            "color": (0.2, 1.0, 0.5)})
                 continue
 
             finger_name, joint_name = key.split("_")
+
+            if joint_name == "cmc" and finger_name != "thumb":
+                renderables[key] = self.engine.scene.create_renderable(
+                    type_id="finger_joint",
+                    params={"position": blueprint["position"],
+                            "bone_vector": blueprint["bone_vector"],
+                            "bone_radius": 0.1,
+                            "joint_radius": 0.2,
+                            "joint_type": "fixed"})
+
+                continue
 
             if joint_name == "mcp" and finger_name != "thumb":
                 renderables[key] = self.engine.scene.create_renderable(
@@ -152,7 +163,7 @@ class Hand:
                     params={"position": blueprint["position"],
                             "bone_length": blueprint["bone_length"],
                             "bone_radius": 0.1,
-                            "joint_radius": 0.2,
+                            "joint_radius": 0.15,
                             "joint_color": (0.2, 0.8, 0.2),
                             "joint_type": "x"})
                 continue
@@ -163,7 +174,7 @@ class Hand:
                     params={"position": blueprint["position"],
                             "bone_length": blueprint["bone_length"],
                             "bone_radius": 0.1,
-                            "joint_radius": 0.2,
+                            "joint_radius": 0.15,
                             "joint_type": "x"})
                 continue
 

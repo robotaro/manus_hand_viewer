@@ -13,6 +13,7 @@ class FingerJoint(Renderable):
         bone_radius = self.params.get("bone_radius", 0.1)
         joint_radius = self.params.get("joint_radius", 0.1)
         bone_length = self.params.get("bone_length", 0.1)
+        bone_vector = self.params.get("bone_vector", None)
         joint_type = self.params.get("joint_type", "xy")
 
         # Select joint type based on the number of axes
@@ -43,18 +44,35 @@ class FingerJoint(Renderable):
                 "subdivisions": 3,
                 "color": (0.3, 0.5, 0.9)
             }
+        elif joint_type == "fixed":
+            joint_blueprint = {
+                "shape": "icosphere",
+                "radius": joint_radius,
+                "subdivisions": 3,
+                "color": (0.3, 0.9, 0.5)
+            }
 
         else:
             raise Exception(f"[ERROR] Joint type '{joint_type}' not suported")
 
         # Select bone type based on whether or not it is a the tip of the finger
-        bone_blueprint = {
-            "shape": "cylinder",
-            "point_a": (0, 0, 0),
-            "point_b": (0, 0, bone_length),
-            "radius": bone_radius,
-            "color": (0.85, 0.85, 0.85)
-        }
+        if joint_type == "fixed":
+            bone_blueprint = {
+                "shape": "cylinder",
+                "point_a": (0, 0, 0),
+                "point_b": bone_vector,
+                "radius": bone_radius,
+                "color": (0.85, 0.85, 0.85)
+            }
+        else:
+            bone_blueprint = {
+                "shape": "cylinder",
+                "point_a": (0, 0, 0),
+                "point_b": (0, 0, bone_length),
+                "radius": bone_radius,
+                "color": (0.85, 0.85, 0.85)
+            }
+
 
         shape_blueprints = [
             joint_blueprint,

@@ -10,7 +10,7 @@ class RenderPassForward(RenderPass):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.program_name = "default_color"
+        self.program_name = "forward"
         self.program = self.load_program(program_name=self.program_name)
 
     def render(self, camera: Camera, renderables: list, directional_light=None):

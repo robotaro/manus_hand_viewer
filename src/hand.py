@@ -53,7 +53,24 @@ class Hand:
                     "width": 1,
                     "height": 1,
                     "depth": 1,
-                    "color": (1.0, 0.0, 0.0)})
+                    "color": (1.0, 0.2, 0.2)})
+
+        renderables["sphere"] = self.engine.scene.create_renderable(
+            type_id="mesh",
+            params={"shape": "icosphere",
+                    "position": (0, 3, 1),
+                    "radius": 0.5,
+                    "subdivisions": 3,
+                    "color": (0.2, 0.4, 1.0)})
+
+        renderables["cylinder"] = self.engine.scene.create_renderable(
+            type_id="mesh",
+            params={"shape": "cylinder",
+                    "position": (3, 3, 5),
+                    "point_a": (0, 0, 0),
+                    "point_b": (-2.5, 0, -2.5),
+                    "radius": 0.25,
+                    "color": (0.12, 0.85, 0.12)})
 
         renderables["floor"] = self.engine.scene.create_renderable(
             type_id="chessboard_plane",

@@ -95,9 +95,6 @@ class Engine:
         self.camera = Camera(window_size=window_size)
         self.scene = self.create_scene()
 
-        # Add basic light
-        self.scene.directional_light = DirectionalLight()
-
         # Flags
         self.close_application = False
 
@@ -171,8 +168,11 @@ class Engine:
         new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
 
         # Add basic rendering passes (order matters!)
-        new_scene.create_render_pass(type_id="shadow")
-        new_scene.create_render_pass(type_id="forward")
+        new_scene.add_render_pass(type_id="shadow")
+        new_scene.add_render_pass(type_id="forward")
+
+        # Add basic light
+        new_scene.directional_light = DirectionalLight()
 
         return new_scene
 

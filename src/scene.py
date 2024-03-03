@@ -51,7 +51,7 @@ class Scene:
         self.renderables.append(new_renderable)
         return new_renderable
 
-    def create_render_pass(self, type_id: str):
+    def add_render_pass(self, type_id: str):
         new_render_pass = self.registered_render_passes[type_id](
             ctx=self.ctx,
             texture_library=self.texture_library)

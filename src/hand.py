@@ -24,7 +24,8 @@ class Hand:
         self.hand_config = utils_io.load_hand_configuration(yaml_fpath=hand_config_yaml_fpath)
         self.hand_animation = utils_io.load_hand_animation(txt_fpath=hand_animation_txt_fpath)
 
-        self.renderables = self.create_renderables()
+        #self.renderables = self.create_renderables()
+        self.renderables = self.create_demo_renderables()
 
         self.timestamps = self.hand_animation["timestamps"].values
         self.joint_values = self.hand_animation.iloc[:, 1:].values
@@ -40,6 +41,29 @@ class Hand:
 
         # Flags
         self.right_hand = True
+
+    def create_demo_renderables(self):
+
+        renderables = {}
+
+        renderables["cube"] = self.engine.scene.create_renderable(
+            type_id="mesh",
+            params={"shape": "box",
+                    "position": (0, 2, 0),
+                    "width": 1,
+                    "height": 1,
+                    "depth": 1,
+                    "color": (1.0, 0.0, 0.0)})
+
+        renderables["floor"] = self.engine.scene.create_renderable(
+            type_id="chessboard_plane",
+            params={
+                "position": (0, 0, 0),
+                "plane_size": 100,
+                "num_squares": 10
+            })
+
+        return renderables
 
     def create_renderables(self) -> dict:
 
@@ -164,7 +188,8 @@ class Hand:
 
         self.update_hand_joints_from_animation(query_timestamp=self.playback_timestamp)
 
-        self.renderables["root"].update()
+        if "root" in self.renderables:
+            self.renderables["root"].update()
 
     def on_imgui(self):
 
@@ -184,17 +209,7 @@ class Hand:
         self.lower_index = self.get_lower_index(query_timestamp=query_timestamp)
 
         lower_index = self.lower_index
-        upper_index = np.minimum(lower_index + 1, self.timestamps.size - 1)
-
-        # Avoid division by zero and ensure valid interpolation
-        if self.timestamps[upper_index] == self.timestamps[lower_index]:
-            interpolated_values = self.joint_values[lower_index, :]
-
-        else:
-            # Linear interpolation
-            fraction = ((query_timestamp - self.timestamps[lower_index]) /
-                        (self.timestamps[upper_index] - self.timestamps[lower_index]))
-            interpolated_values = self.joint_values[lower_index, :] + fraction * (self.joint_values[upper_index, :] - self.joint_values[lower_index, :])
+        joint_values = self.joint_values[lower_index, :]
 
         for renderable_name, renderable in self.renderables.items():
 
@@ -204,7 +219,7 @@ class Hand:
             matched_axes = [(column_index - 1, key) for column_index, key in enumerate(self.hand_animation.keys()) if key.startswith(renderable_name)]
 
             for (column_index, matched_axis) in matched_axes:
-                angle = np.radians(interpolated_values[column_index])
+                angle = np.radians(joint_values[column_index])
                 if matched_axis.endswith("x"):
                     renderable.rotation.x = angle
                 elif matched_axis.endswith("y"):

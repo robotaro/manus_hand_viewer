@@ -9,11 +9,11 @@ from src.texture_library import TextureLibrary
 
 class RenderPass:
 
-    def __init__(self, ctx: moderngl.Context, program_name: str, texture_library: TextureLibrary):
+    def __init__(self, ctx: moderngl.Context, texture_library: TextureLibrary):
         self.ctx = ctx
         self.texture_library = texture_library
-        self.program_name = program_name
-        self.program = self.load_program(program_name=program_name)
+        self.program_name = None
+        self.program = None
 
     def load_program(self, program_name):
         fpath = os.path.join(constants.SHADERS_DIR, f"{program_name}.vert")

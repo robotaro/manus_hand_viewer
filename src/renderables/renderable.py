@@ -59,9 +59,6 @@ class Renderable:
     def render(self, program_name: str):
         self.vaos[program_name].render(self.render_mode)
 
-    def render_shadow(self):
-        pass
-
     def calculate_model_matrix(self):
         m_model = glm.mat4()
         m_model = glm.translate(m_model, self.position)

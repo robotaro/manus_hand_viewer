@@ -171,9 +171,8 @@ class Engine:
         new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
 
         # Add basic rendering passes (order matters!)
-        new_scene.create_render_pass(type_id="shadow", program_name="shadow_map")
-        new_scene.create_render_pass(type_id="forward", program_name="default_color")
-
+        new_scene.create_render_pass(type_id="shadow")
+        new_scene.create_render_pass(type_id="forward")
 
         return new_scene
 

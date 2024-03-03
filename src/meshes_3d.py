@@ -71,10 +71,7 @@ def create_mesh(shape: str, params: dict) -> dict:
         width = params.get(constants.KEY_WIDTH, 1.0)
         height = params.get(constants.KEY_HEIGHT, 1.0)
         depth = params.get(constants.KEY_DEPTH, 1.0)
-        primitive = trimesh.creation.box(extents=(width, height, depth))
-        vertices = np.array(primitive.vertices).astype('f4')
-        normals = np.array(primitive.vertex_normals).astype('f4')
-        indices = np.array(primitive.faces).astype('i4')
+        vertices, normals, indices = generate_box_mesh(width=width, height=height, depth=depth)
 
     elif shape == constants.KEY_SHAPE_CONE:
         radius = params.get(constants.KEY_RADIUS, 0.5)
@@ -122,41 +119,58 @@ def create_mesh(shape: str, params: dict) -> dict:
         constants.KEY_PRIMITIVE_INDICES: indices
     }
 
+def generate_box_mesh(width: float, height: float, depth: float):
+    vertices = np.array([
+        # Back face
+        [-0.5, -0.5, -0.5],  [0.5, 0.5, -0.5], [0.5, -0.5, -0.5],
+        [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5],
+        # Front face
+        [-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5],
+        [-0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5],
+        # Bottom face
+        [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5],
+        [-0.5, -0.5, -0.5], [0.5, -0.5, 0.5], [-0.5, -0.5, 0.5],
+        # Top face
+        [-0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [0.5, 0.5, -0.5],
+        [-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5], [0.5, 0.5, 0.5],
+        # Left face
+        [-0.5, -0.5, -0.5], [-0.5, 0.5, 0.5],[-0.5, 0.5, -0.5],
+        [-0.5, -0.5, -0.5], [-0.5, -0.5, 0.5], [-0.5, 0.5, 0.5],
+        # Right face
+        [0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5],
+        [0.5, -0.5, -0.5], [0.5, 0.5, 0.5], [0.5, -0.5, 0.5],
+    ], dtype='f4')
 
-def convert_faces_to_triangles(vertices, uvs, faces):
-    """
-    From ChatGPT: This function takes the input vertices and UVs that share common vertex normals and
-    recreate a list of triangles with unique normals for each vertex. UVs are also modified+ to follow
-    the same logic
-    """
+    vertices *= np.array([width, height, depth], dtype='f4')
 
-    # Calculate flat normals for each face
-    face_normals = np.cross(vertices[faces[:, 1]] - vertices[faces[:, 0]],
-                            vertices[faces[:, 2]] - vertices[faces[:, 0]])
-    face_normals /= np.linalg.norm(face_normals, axis=1)[:, np.newaxis]
+    # Normals for each triangle, duplicated per vertex
+    normals = np.array([
+        # Back face
+        [0, 0, -1], [0, 0, -1], [0, 0, -1],
+        [0, 0, -1], [0, 0, -1], [0, 0, -1],
+        # Front face
+        [0, 0, 1], [0, 0, 1], [0, 0, 1],
+        [0, 0, 1], [0, 0, 1], [0, 0, 1],
+        # Bottom face
+        [0, -1, 0], [0, -1, 0], [0, -1, 0],
+        [0, -1, 0], [0, -1, 0], [0, -1, 0],
+        # Top face
+        [0, 1, 0], [0, 1, 0], [0, 1, 0],
+        [0, 1, 0], [0, 1, 0], [0, 1, 0],
+        # Left face
+        [-1, 0, 0], [-1, 0, 0], [-1, 0, 0],
+        [-1, 0, 0], [-1, 0, 0], [-1, 0, 0],
+        # Right face
+        [1, 0, 0], [1, 0, 0], [1, 0, 0],
+        [1, 0, 0], [1, 0, 0], [1, 0, 0],
+    ], dtype='f4')
 
-    # Initialize arrays for the new vertices, normals, and UVs
-    new_vertices = []
-    new_normals = []
-    new_uvs = []
+    # Indices for each triangle, since vertices are now unique per triangle, we just go sequentially
+    indices = np.array([
+        i for i in range(36)
+    ], dtype='i4')
 
-    # Iterate through each face and populate the new arrays
-    for i in range(len(faces)):
-        face = faces[i]
-        face_normal = face_normals[i]
-
-        for vertex_idx in face:
-            new_vertices.append(vertices[vertex_idx])
-            new_normals.append(face_normal)
-            if uvs is not None and len(uvs) > 0:
-                new_uvs.append(uvs[vertex_idx])
-
-    # Convert the lists to NumPy arrays
-    new_vertices = np.array(new_vertices, dtype=np.float32)
-    new_normals = np.array(new_normals, dtype=np.float32)
-    new_uvs = np.array(new_uvs, dtype=np.float32)
-
-    return new_vertices, new_normals, new_uvs
+    return vertices, normals, indices
 
 
 def generate_cylinder_mesh(point_a, point_b, radius, num_sections):

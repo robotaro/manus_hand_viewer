@@ -11,9 +11,6 @@ def main():
 
     engine = Engine(vertical_sync=True)
 
-    # Configure graphics engine
-    engine.scene.create_render_pass(type_id="forward", program_name="default_color")
-
     # Configure hand
     config_fpath = os.path.join(constants.CONFIG_DIR, "default_hand.yaml")
     animation_fpath = os.path.join(constants.DATA_DIR, "animation_1.txt")

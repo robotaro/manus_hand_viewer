@@ -168,8 +168,12 @@ class Engine:
         # Register Renderables
         new_scene.register_renderable(type_id="mesh", renderable_class=Mesh)
         new_scene.register_renderable(type_id="chessboard_plane", renderable_class=ChessboardPlane)
-
         new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
+
+        # Add basic rendering passes (order matters!)
+        new_scene.create_render_pass(type_id="shadow", program_name="shadow_map")
+        new_scene.create_render_pass(type_id="forward", program_name="default_color")
+
 
         return new_scene
 

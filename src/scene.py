@@ -2,7 +2,7 @@ import moderngl
 
 from texture_library import TextureLibrary
 from utilities import utils_io
-from src.light import Light
+from src.directional_light import DirectionalLight
 from src.camera import Camera
 
 
@@ -19,7 +19,7 @@ class Scene:
         self.renderables = []
 
         self.point_lights = []
-        self.directional_lights = []
+        self.directional_light = None
 
         self.texture_library = texture_library
         self.depth_texture = texture_library.textures["depth_texture"]
@@ -65,4 +65,4 @@ class Scene:
             render_pass.render(
                 camera=camera,
                 renderables=self.renderables,
-                directional_lights=self.directional_lights)
+                directional_light=self.directional_light)

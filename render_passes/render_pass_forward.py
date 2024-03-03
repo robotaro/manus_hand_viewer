@@ -10,9 +10,8 @@ class RenderPassForward(RenderPass):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def render(self, camera: Camera, renderables: list, directional_lights=None):
+    def render(self, camera: Camera, renderables: list, directional_light=None):
 
-        directional_lights = directional_lights if directional_lights is not None else []
 
         # Prepare to render directly to the screen
         self.ctx.screen.use()
@@ -20,11 +19,11 @@ class RenderPassForward(RenderPass):
         self.ctx.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
 
         # Only working with one light for now
-        if len(directional_lights) > 0:
-            self.program['light.position'].write(directional_lights[0].position)
-            self.program['light.Ia'].write(directional_lights[0].Ia)
-            self.program['light.Id'].write(directional_lights[0].Id)
-            self.program['light.Is'].write(directional_lights[0].Is)
+        if directional_light:
+            self.program['light.position'].write(directional_light.position)
+            self.program['light.Ia'].write(directional_light.Ia)
+            self.program['light.Id'].write(directional_light.Id)
+            self.program['light.Is'].write(directional_light.Is)
 
         # Set camera
         self.program['m_proj'].write(camera.projection_matrix)

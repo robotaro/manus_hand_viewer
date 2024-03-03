@@ -13,7 +13,7 @@ from imgui.integrations.glfw import GlfwRenderer
 import constants
 from camera import Camera
 from scene import Scene
-from light import Light
+from directional_light import DirectionalLight
 from texture_library import TextureLibrary
 from utilities import utils_logging
 
@@ -96,7 +96,7 @@ class Engine:
         self.scene = self.create_scene()
 
         # Add basic light
-        self.scene.directional_lights.append(Light())
+        self.scene.directional_light = DirectionalLight()
 
         # Flags
         self.close_application = False
@@ -163,12 +163,11 @@ class Engine:
 
         # Register Render Passes
         new_scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
-        new_scene.register_render_pass(type_id="hello_world", render_pass_class=RenderPassHelloWorld)
+        new_scene.register_render_pass(type_id="shadow", render_pass_class=RenderPassShadow)
 
         # Register Renderables
         new_scene.register_renderable(type_id="mesh", renderable_class=Mesh)
         new_scene.register_renderable(type_id="chessboard_plane", renderable_class=ChessboardPlane)
-        new_scene.register_renderable(type_id="hello_triangle", renderable_class=HelloTriangle)
 
         new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
 
@@ -182,7 +181,7 @@ class Engine:
         while not glfw.window_should_close(self.window_glfw) and not self.close_application:
 
             # Clear framebuffer
-            self.ctx.clear(color=(0.0, 0.0, 0.0))
+            self.ctx.clear(color=(1.0, 1.0, 1.0))
 
             # Update all window events
             glfw.poll_events()

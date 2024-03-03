@@ -34,7 +34,7 @@ class Hand:
         #plt.show()
 
         self.time_dilation_factor = 0.25
-        self.play_animation = True
+        self.play_animation = False
         self.playback_timestamp = 0
         self.lower_index = 0
 
@@ -116,7 +116,7 @@ class Hand:
                             "joint_type": "x"})
                 continue
 
-            if joint_name == "pip":
+            if joint_name in ["pip", "dip", "ip"]:
                 renderables[key] = self.engine.scene.create_renderable(
                     type_id="finger_joint",
                     params={"position": blueprint["position"],
@@ -124,28 +124,6 @@ class Hand:
                             "bone_radius": 0.1,
                             "joint_radius": 0.2,
                             "joint_type": "x"})
-                continue
-
-            if joint_name == "dip":
-                renderables[key] = self.engine.scene.create_renderable(
-                    type_id="finger_joint",
-                    params={"position": blueprint["position"],
-                            "bone_length": blueprint["bone_length"],
-                            "bone_radius": 0.1,
-                            "joint_radius": 0.2,
-                            "joint_type": "x"})
-
-                continue
-
-            if joint_name == "ip":
-                renderables[key] = self.engine.scene.create_renderable(
-                    type_id="finger_joint",
-                    params={"position": blueprint["position"],
-                            "bone_length": blueprint["bone_length"],
-                            "bone_radius": 0.1,
-                            "joint_radius": 0.2,
-                            "joint_type": "x"})
-
                 continue
 
             renderables[key] = self.engine.scene.create_renderable(
@@ -166,7 +144,7 @@ class Hand:
         # Step 4) Trigger update on all transforms so that their world matrices are validated
         renderables["root"].update()
 
-        # Step 5) Add any other enviromental meshes necessary for renderi
+        # Step 5) Add any other enviromental meshes necessary for rendering
         self.engine.scene.create_renderable(
             type_id="chessboard_plane",
             params={

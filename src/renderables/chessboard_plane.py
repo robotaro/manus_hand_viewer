@@ -12,8 +12,8 @@ class ChessboardPlane(Renderable):
 
     def get_vertex_data(self):
 
-        color_light = self.params.get("color_light", (0.95, 0.95, 0.95))
-        color_dark = self.params.get("color_dark", (0.35, 0.35, 0.35))
+        color_light = self.params.get("color_light", (0.98, 0.98, 0.98))
+        color_dark = self.params.get("color_dark", (0.9, 0.9, 0.9))
         plane_axes = self.params.get("plane_axes", "xz")
         plane_size = self.params.get("plane_size", 10.0)
         num_squares = self.params.get("num_squares", 10)

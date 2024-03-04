@@ -33,7 +33,7 @@ class Engine:
 
     def __init__(self,
                  window_title="Manus Hand Viewer",
-                 window_size=(1280, 720),
+                 window_size=(1920, 1080),
                  vertical_sync=False,
                  log_level="info"):
 

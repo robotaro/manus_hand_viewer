@@ -11,3 +11,4 @@ PyGLM==2.7.1
 Pillow==10.0.0
 trimesh==4.1.6  # 3D geometry operations (requires scipy)
 scipy
+matplotlib

@@ -78,6 +78,11 @@ class Engine:
 
         # Create main moderngl Context
         self.ctx = moderngl.create_context()
+        print("OpenGL version:", self.ctx.version_code)
+        print("Vendor:", self.ctx.info['GL_VENDOR'])
+        print("Renderer:", self.ctx.info['GL_RENDERER'])
+        extensions = self.ctx.extensions
+        print("Supported OpenGL extensions:", extensions)
 
         # Inputs
         self.mouse_state = self.initialise_mouse_state()

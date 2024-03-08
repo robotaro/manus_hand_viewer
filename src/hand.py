@@ -230,6 +230,8 @@ class Hand:
                                                         "%.3f")
         imgui.text(f"Index: {self.lower_index}")
         _, self.play_animation = imgui.checkbox("Play animation", self.play_animation)
+
+        imgui.set_window_size(600, 120)
         imgui.end()
 
     def update_hand_joints_from_animation(self, query_timestamp: float):

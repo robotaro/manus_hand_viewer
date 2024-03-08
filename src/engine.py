@@ -165,7 +165,6 @@ class Engine:
 
         # Register Render Passes
         new_scene.register_render_pass(type_id="forward", render_pass_class=RenderPassForward)
-        new_scene.register_render_pass(type_id="shadow", render_pass_class=RenderPassShadow)
 
         # Register Renderables
         new_scene.register_renderable(type_id="mesh", renderable_class=Mesh)
@@ -173,7 +172,6 @@ class Engine:
         new_scene.register_renderable(type_id="finger_joint", renderable_class=FingerJoint)
 
         # Add basic rendering passes (order matters!)
-        new_scene.add_render_pass(type_id="shadow")
         new_scene.add_render_pass(type_id="forward")
 
         # Add basic light

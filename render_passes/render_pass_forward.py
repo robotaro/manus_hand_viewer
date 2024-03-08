@@ -27,10 +27,6 @@ class RenderPassForward(RenderPass):
             self.program['light.Id'].write(directional_light.Id)
             self.program['light.Is'].write(directional_light.Is)
 
-        # Set shadow settings
-        self.program['shadowMap'] = 1
-        self.program['u_resolution'].write(glm.vec2((1280, 720)))
-
         # Set camera
         self.program['m_proj'].write(camera.projection_matrix)
         self.program['m_view'].write(camera.view_matrix)
@@ -40,6 +36,3 @@ class RenderPassForward(RenderPass):
 
             self.program['m_model'].write(renderable.world_matrix)
             renderable.render(program_name=self.program_name)
-
-
-    

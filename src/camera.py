@@ -110,7 +110,7 @@ class Camera:
         imgui.spacing()
 
         # imgui.set_window_position(300, 150)
-        #imgui.set_window_size(500, 500)
+        imgui.set_window_size(250, 150)
 
         # draw text label inside of current window
         imgui.end()
